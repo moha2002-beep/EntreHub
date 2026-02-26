@@ -5,8 +5,10 @@ import {
   onAuthStateChanged,
   updateProfile,
 } from "firebase/auth";
-import { auth } from "./firebase";
 
+
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { auth, db } from "./firebase";
 // Register a new user
 export const registerUser = async (email, password, displayName, role) => {
   try {
@@ -16,15 +18,17 @@ export const registerUser = async (email, password, displayName, role) => {
       password,
     );
     const user = userCredential.user;
-
     // Update profile with display name
     await updateProfile(user, {
       displayName: displayName,
     });
-
-    // TODO: Store additional user data (role, profile info) in Firestore
-    // For now, role can be stored in custom claims or a separate database
-
+    // Create Firestore user profile document
+    await setDoc(doc(db, "users", user.uid), {
+      displayName: displayName,
+      email: email,
+      role: role,
+      createdAt: serverTimestamp(),
+    });
     return {
       success: true,
       user: {

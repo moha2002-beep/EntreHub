@@ -1,44 +1,46 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import RegisterForm from "../components/RegisterForm";
 import "../styles/Register.css";
 
-function Register({ onSwitchToLogin }) {
-  const [registrationSuccess, setRegistrationSuccess] = useState(false);
-  const [newUser, setNewUser] = useState(null);
+function Register() {
+  const [registerSuccess, setRegisterSuccess] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const navigate = useNavigate();
 
-  const handleRegistrationSuccess = (user) => {
-    setNewUser(user);
-    setRegistrationSuccess(true);
+  const handleRegisterSuccess = (user) => {
+    setCurrentUser(user);
+    setRegisterSuccess(true);
 
-    // Optional: Redirect after a few seconds
     setTimeout(() => {
-      // window.location.href = '/dashboard'; // Uncomment when you have routing set up
       console.log("Redirecting to dashboard with user:", user);
-    }, 2000);
+      navigate("/dashboard");
+    }, 1200);
+  };
+
+  const handleSwitchToLogin = () => {
+    navigate("/login");
   };
 
   return (
     <div className="register-page">
       <div className="register-container">
-        {registrationSuccess ? (
+        {registerSuccess ? (
           <div className="success-message">
             <div className="success-icon">✓</div>
-            <h2>Welcome to EntreHub, {newUser?.displayName}!</h2>
+            <h2>Welcome to EntreHub, {currentUser?.displayName || "User"}!</h2>
             <p>Your account has been created successfully.</p>
-            <p className="account-type">
-              Account Type: <strong>{newUser?.role}</strong>
-            </p>
             <p className="redirect-message">Redirecting to your dashboard...</p>
           </div>
         ) : (
           <div className="register-content">
             <div className="register-header">
-              <h1>Join EntreHub</h1>
-              <p>Create your account to get started</p>
+              <h1>Create your account</h1>
+              <p>Join EntreHub and start your journey.</p>
             </div>
             <RegisterForm
-              onSuccess={handleRegistrationSuccess}
-              onSwitchToLogin={onSwitchToLogin}
+              onSuccess={handleRegisterSuccess}
+              onSwitchToLogin={handleSwitchToLogin} // "Sign in here" uses this
             />
           </div>
         )}

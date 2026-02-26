@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import LoginForm from "../components/LoginForm";
 import "../styles/Register.css";
 
-function Login({ onSwitchToRegister }) {
+function Login() {
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const navigate = useNavigate();
 
   const handleLoginSuccess = (user) => {
     setCurrentUser(user);
@@ -12,7 +14,12 @@ function Login({ onSwitchToRegister }) {
 
     setTimeout(() => {
       console.log("Redirecting to dashboard with user:", user);
+      navigate("/dashboard");
     }, 1200);
+  };
+
+  const handleSwitchToRegister = () => {
+    navigate("/register");
   };
 
   return (
@@ -33,7 +40,7 @@ function Login({ onSwitchToRegister }) {
             </div>
             <LoginForm
               onSuccess={handleLoginSuccess}
-              onSwitchToRegister={onSwitchToRegister}
+              onSwitchToRegister={handleSwitchToRegister}
             />
           </div>
         )}
