@@ -1,0 +1,596 @@
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import {
+  getUserProfile,
+  getRoleSpecificFields,
+  updateUserProfile,
+} from "../services/userService";
+import "../styles/Profile.css";
+
+const LIST_FIELDS = new Set([
+  "interests",
+  "expertiseTags",
+  "investmentFocus",
+  "portfolio",
+]);
+
+const NUMBER_FIELDS = new Set(["yearsOfExperience"]);
+
+const roleLabelMap = {
+  entrepreneur: "Entrepreneur",
+  investor: "Investor",
+  mentor: "Mentor",
+};
+
+const valueLabelMap = {
+  currentStage: {
+    idea: "Idea Stage",
+    mvp: "MVP",
+    growth: "Growth",
+    scaling: "Scaling",
+  },
+  availability: {
+    weekdays: "Weekdays",
+    weekends: "Weekends",
+    flexible: "Flexible",
+  },
+};
+
+function parseCommaList(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) {
+    return value
+      .map(String)
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  return String(value)
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function arraysEqual(a, b) {
+  if (a === b) return true;
+  if (!Array.isArray(a) || !Array.isArray(b)) return false;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i += 1) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
+function toInputValue(key, value) {
+  if (value === undefined || value === null) return "";
+  if (LIST_FIELDS.has(key)) return parseCommaList(value).join(", ");
+  return String(value);
+}
+
+function formatValue(key, value) {
+  if (value === undefined || value === null || value === "")
+    return "Not provided";
+
+  if (LIST_FIELDS.has(key)) {
+    const list = parseCommaList(value);
+    return list.length ? list.join(", ") : "Not provided";
+  }
+
+  if (typeof value === "object" && typeof value.toDate === "function") {
+    try {
+      return value.toDate().toLocaleDateString();
+    } catch {
+      // ignore formatting errors
+    }
+  }
+
+  const labelMap = valueLabelMap[key];
+  if (labelMap && typeof value === "string") {
+    return labelMap[value] || value;
+  }
+
+  return String(value);
+}
+
+function buildFormData(profile, fallbackEmail) {
+  const roleFields = getRoleSpecificFields(profile?.role);
+
+  const next = {
+    displayName: profile?.displayName ?? "",
+    email: profile?.email ?? fallbackEmail ?? "",
+    bio: profile?.bio ?? "",
+    location: profile?.location ?? "",
+  };
+
+  for (const field of roleFields.fields) {
+    next[field.key] = toInputValue(field.key, profile?.[field.key]);
+  }
+
+  return next;
+}
+
+function Profile() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const isEditing = searchParams.get("mode") === "edit";
+
+  const [profile, setProfile] = useState(null);
+  const [formData, setFormData] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const roleFields = useMemo(() => {
+    if (!profile?.role) return { section: "", fields: [] };
+    return getRoleSpecificFields(profile.role);
+  }, [profile?.role]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const load = async () => {
+      setLoading(true);
+      setErrors({});
+      try {
+        const data = await getUserProfile(user.uid);
+        setProfile(data);
+
+        if (data) {
+          setFormData(buildFormData(data, user.email));
+        }
+      } catch (err) {
+        console.error(err);
+        setErrors({ general: "Could not load your profile." });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, [user]);
+
+  const enterEditMode = () => {
+    setSuccessMessage("");
+    setErrors({});
+    setSearchParams({ mode: "edit" }, { replace: true });
+  };
+
+  const exitEditMode = () => {
+    setSearchParams({}, { replace: true });
+  };
+
+  const handleCancel = () => {
+    if (profile) setFormData(buildFormData(profile, user?.email));
+    setErrors({});
+    setSuccessMessage("");
+    exitEditMode();
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const validate = () => {
+    const nextErrors = {};
+
+    if (!String(formData.displayName || "").trim()) {
+      nextErrors.displayName = "Full name is required";
+    }
+
+    for (const field of roleFields.fields) {
+      if (!field.required) continue;
+
+      const raw = formData[field.key];
+
+      if (LIST_FIELDS.has(field.key)) {
+        if (parseCommaList(raw).length === 0) {
+          nextErrors[field.key] = `${field.label} is required`;
+        }
+      } else if (!String(raw || "").trim()) {
+        nextErrors[field.key] = `${field.label} is required`;
+      }
+    }
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!user || !profile) return;
+
+    setSuccessMessage("");
+
+    if (!validate()) return;
+
+    setSaving(true);
+    try {
+      const editableKeys = [
+        "displayName",
+        "bio",
+        "location",
+        ...roleFields.fields.map((f) => f.key),
+      ];
+
+      const nextValues = {};
+      for (const key of editableKeys) {
+        const raw = formData[key];
+
+        if (LIST_FIELDS.has(key)) {
+          nextValues[key] = parseCommaList(raw);
+        } else if (NUMBER_FIELDS.has(key)) {
+          const trimmed = String(raw ?? "").trim();
+          nextValues[key] = trimmed ? Number(trimmed) : null;
+        } else {
+          nextValues[key] = raw ?? "";
+        }
+      }
+
+      const changes = {};
+      for (const key of editableKeys) {
+        const current = profile[key];
+        const next = nextValues[key];
+
+        if (LIST_FIELDS.has(key)) {
+          const currentList = parseCommaList(current);
+          if (!arraysEqual(currentList, next)) changes[key] = next;
+          continue;
+        }
+
+        if (NUMBER_FIELDS.has(key)) {
+          const currentNum =
+            current === undefined || current === null || current === ""
+              ? null
+              : Number(current);
+          const nextNum = next === null ? null : Number(next);
+          if (currentNum !== nextNum) changes[key] = nextNum;
+          continue;
+        }
+
+        const currentText = current ?? "";
+        if (currentText !== next) changes[key] = next;
+      }
+
+      if (Object.keys(changes).length === 0) {
+        setSuccessMessage("No changes to save.");
+        exitEditMode();
+        return;
+      }
+
+      await updateUserProfile(user.uid, changes);
+
+      const updated = { ...profile, ...changes };
+      setProfile(updated);
+      setFormData(buildFormData(updated, user.email));
+
+      setSuccessMessage("Profile updated.");
+      exitEditMode();
+    } catch (err) {
+      console.error(err);
+      setErrors({ general: "Failed to save changes. Please try again." });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!user) return <p>You are not signed in.</p>;
+
+  if (loading) {
+    return (
+      <div className="profile-page">
+        <div className="profile-container">
+          <p>Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="profile-page">
+        <div className="profile-container">
+          <p>No profile found for this user.</p>
+          <div className="profile-header-actions">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => navigate("/dashboard")}
+            >
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const roleLabel = roleLabelMap[profile.role] || profile.role || "Member";
+
+  return (
+    <div className="profile-page">
+      <div className="profile-container">
+        <header className="profile-header">
+          <h1 className="profile-title">
+            {isEditing ? "Edit Profile" : "Your Profile"}
+          </h1>
+
+          <div className="profile-header-actions">
+            {!isEditing ? (
+              <>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={enterEditMode}
+                >
+                  Edit Profile
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => navigate("/dashboard")}
+                >
+                  Back to Dashboard
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleCancel}
+                  disabled={saving}
+                >
+                  Cancel
+                </button>
+              </>
+            )}
+          </div>
+        </header>
+
+        {errors.general && (
+          <div className="alert alert-error">{errors.general}</div>
+        )}
+        {successMessage && (
+          <div className="alert alert-success">{successMessage}</div>
+        )}
+
+        {!isEditing ? (
+          <>
+            <section className="profile-section">
+              <h2 className="profile-section-title">Basic Information</h2>
+
+              <div className="profile-field">
+                <div className="profile-field-label">Full name</div>
+                <div className="profile-field-value">
+                  {formatValue("displayName", profile.displayName)}
+                </div>
+              </div>
+
+              <div className="profile-field">
+                <div className="profile-field-label">Email</div>
+                <div className="profile-field-value">
+                  {formatValue("email", profile.email || user.email)}
+                </div>
+              </div>
+
+              <div className="profile-field">
+                <div className="profile-field-label">Role</div>
+                <div className="profile-field-value">
+                  <span className="profile-pill">{roleLabel}</span>
+                </div>
+              </div>
+
+              <div className="profile-field">
+                <div className="profile-field-label">Bio</div>
+                <div className="profile-field-value">
+                  {formatValue("bio", profile.bio)}
+                </div>
+              </div>
+
+              <div className="profile-field">
+                <div className="profile-field-label">Location</div>
+                <div className="profile-field-value">
+                  {formatValue("location", profile.location)}
+                </div>
+              </div>
+            </section>
+
+            {roleFields.fields.length > 0 && (
+              <section className="profile-section">
+                <h2 className="profile-section-title">{roleFields.section}</h2>
+
+                {roleFields.fields.map((field) => (
+                  <div key={field.key} className="profile-field">
+                    <div className="profile-field-label">{field.label}</div>
+                    <div className="profile-field-value">
+                      {formatValue(field.key, profile[field.key])}
+                    </div>
+                  </div>
+                ))}
+              </section>
+            )}
+          </>
+        ) : (
+          <form onSubmit={handleSubmit}>
+            <fieldset className="profile-section">
+              <legend>Basic Information</legend>
+
+              <div className="form-group">
+                <label htmlFor="displayName">Full Name *</label>
+                <input
+                  type="text"
+                  id="displayName"
+                  name="displayName"
+                  value={formData.displayName || ""}
+                  onChange={handleInputChange}
+                  disabled={saving}
+                />
+                {errors.displayName && (
+                  <span className="error-message">{errors.displayName}</span>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="email">Email Address</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email || ""}
+                  disabled
+                  className="disabled-input"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="bio">Bio</label>
+                <textarea
+                  id="bio"
+                  name="bio"
+                  value={formData.bio || ""}
+                  onChange={handleInputChange}
+                  disabled={saving}
+                  rows="4"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="location">Location</label>
+                <input
+                  type="text"
+                  id="location"
+                  name="location"
+                  value={formData.location || ""}
+                  onChange={handleInputChange}
+                  disabled={saving}
+                />
+              </div>
+            </fieldset>
+
+            {roleFields.fields.length > 0 && (
+              <fieldset className="profile-section">
+                <legend>{roleFields.section}</legend>
+
+                {roleFields.fields.map((field) => (
+                  <div key={field.key} className="form-group">
+                    <label htmlFor={field.key}>
+                      {field.label}
+                      {field.required && " *"}
+                    </label>
+
+                    {field.type === "text" && (
+                      <input
+                        type="text"
+                        id={field.key}
+                        name={field.key}
+                        value={formData[field.key] || ""}
+                        onChange={handleInputChange}
+                        disabled={saving}
+                      />
+                    )}
+
+                    {field.type === "textarea" && (
+                      <textarea
+                        id={field.key}
+                        name={field.key}
+                        value={formData[field.key] || ""}
+                        onChange={handleInputChange}
+                        disabled={saving}
+                        rows="3"
+                      />
+                    )}
+
+                    {field.type === "select" && (
+                      <select
+                        id={field.key}
+                        name={field.key}
+                        value={formData[field.key] || ""}
+                        onChange={handleInputChange}
+                        disabled={saving}
+                      >
+                        <option value="">-- Select --</option>
+
+                        {field.key === "currentStage" && (
+                          <>
+                            <option value="idea">Idea Stage</option>
+                            <option value="mvp">MVP</option>
+                            <option value="growth">Growth</option>
+                            <option value="scaling">Scaling</option>
+                          </>
+                        )}
+
+                        {field.key === "availability" && (
+                          <>
+                            <option value="weekdays">Weekdays</option>
+                            <option value="weekends">Weekends</option>
+                            <option value="flexible">Flexible</option>
+                          </>
+                        )}
+                      </select>
+                    )}
+
+                    {field.type === "number" && (
+                      <input
+                        type="number"
+                        id={field.key}
+                        name={field.key}
+                        value={formData[field.key] || ""}
+                        onChange={handleInputChange}
+                        disabled={saving}
+                      />
+                    )}
+
+                    {field.type === "date" && (
+                      <input
+                        type="date"
+                        id={field.key}
+                        name={field.key}
+                        value={formData[field.key] || ""}
+                        onChange={handleInputChange}
+                        disabled={saving}
+                      />
+                    )}
+
+                    {errors[field.key] && (
+                      <span className="error-message">{errors[field.key]}</span>
+                    )}
+                  </div>
+                ))}
+              </fieldset>
+            )}
+
+            <div className="form-actions">
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={saving}
+              >
+                {saving ? "Saving..." : "Save Changes"}
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={handleCancel}
+                disabled={saving}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default Profile;

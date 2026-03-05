@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../Context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import { getUserProfile } from "../services/userService";
 import { logoutUser } from "../services/authService";
+import { getCompleteness } from "../utils/profileCompletedness";
 import "../styles/Dashboard.css";
 
 function Dashboard() {
@@ -62,10 +63,10 @@ function Dashboard() {
   };
 
   const roleLabel = roleLabelMap[role] || "Member";
+  const completeness = getCompleteness(profile);
 
   return (
     <div className="dashboard-page">
-      {/* Header */}
       <header className="dashboard-header">
         <div className="dashboard-logo">EntreHub</div>
 
@@ -144,10 +145,8 @@ function Dashboard() {
         </div>
       </header>
 
-      {/* Main */}
       <main className="dashboard-main">
         <div className="dashboard-content">
-          {/* Hero / Overview banner */}
           <section className="dashboard-hero-card">
             <div className="dashboard-hero-title">
               Welcome back, {displayName}
@@ -158,23 +157,45 @@ function Dashboard() {
             </p>
           </section>
 
-          {/* Section content */}
           {activeSection === "overview" && (
             <section className="dashboard-grid">
               <div className="dashboard-card">
                 <h2 className="dashboard-card-title">Getting started</h2>
                 <div className="dashboard-card-body">
                   <p>
-                    This is your EntreHub dashboard. Use the navigation above to
-                    access your profile, mentors, resources, and the community
-                    feed.
+                    Use the navigation above to access your profile, mentors,
+                    resources, and the community feed.
                   </p>
-                  <ul className="dashboard-meta-list">
-                    <li>Profile: review your basic information</li>
-                    <li>Mentors: discover guidance tailored to your role</li>
-                    <li>Resources: curated content to help you grow</li>
-                    <li>Community: stay updated with the latest activity</li>
-                  </ul>
+
+                  <div style={{ marginTop: "0.9rem" }}>
+                    <strong>
+                      Profile completeness: {completeness.percent}%
+                    </strong>
+                    <div className="dashboard-progress" aria-hidden="true">
+                      <div
+                        className="dashboard-progress-bar"
+                        style={{ width: `${completeness.percent}%` }}
+                      />
+                    </div>
+
+                    {completeness.missing.length > 0 && (
+                      <ul className="dashboard-meta-list">
+                        {completeness.missing.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    )}
+
+                    <div className="dashboard-action-row">
+                      <button
+                        type="button"
+                        className="dashboard-action-btn"
+                        onClick={() => navigate("/profile?mode=edit")}
+                      >
+                        Complete profile
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -233,9 +254,23 @@ function Dashboard() {
                 <p>
                   Role: <strong>{roleLabel}</strong>
                 </p>
-                <p style={{ marginTop: "0.7rem" }}>
-                  Profile editing and additional details will appear here.
-                </p>
+
+                <div className="dashboard-action-row">
+                  <button
+                    type="button"
+                    className="dashboard-action-btn"
+                    onClick={() => navigate("/profile")}
+                  >
+                    View profile
+                  </button>
+                  <button
+                    type="button"
+                    className="dashboard-action-btn"
+                    onClick={() => navigate("/profile?mode=edit")}
+                  >
+                    Edit profile
+                  </button>
+                </div>
               </div>
             </section>
           )}
