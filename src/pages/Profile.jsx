@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -6,6 +6,7 @@ import {
   getRoleSpecificFields,
   updateUserProfile,
 } from "../services/userService";
+import { uploadProfileImage } from "../services/storageService";
 import "../styles/Profile.css";
 
 const LIST_FIELDS = new Set([
@@ -64,6 +65,13 @@ function arraysEqual(a, b) {
 function toInputValue(key, value) {
   if (value === undefined || value === null) return "";
   if (LIST_FIELDS.has(key)) return parseCommaList(value).join(", ");
+  if (typeof value === "object" && typeof value.toDate === "function") {
+    try {
+      return value.toDate().toISOString().split("T")[0];
+    } catch {
+      return "";
+    }
+  }
   return String(value);
 }
 
@@ -124,6 +132,10 @@ function Profile() {
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
 
+  const fileInputRef = useRef(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageError, setImageError] = useState("");
+
   const roleFields = useMemo(() => {
     if (!profile?.role) return { section: "", fields: [] };
     return getRoleSpecificFields(profile.role);
@@ -132,25 +144,32 @@ function Profile() {
   useEffect(() => {
     if (!user) return;
 
+    let cancelled = false;
+
     const load = async () => {
       setLoading(true);
       setErrors({});
       try {
         const data = await getUserProfile(user.uid);
+        if (cancelled) return;
         setProfile(data);
 
         if (data) {
           setFormData(buildFormData(data, user.email));
         }
       } catch (err) {
+        if (cancelled) return;
         console.error(err);
         setErrors({ general: "Could not load your profile." });
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     load();
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   const enterEditMode = () => {
@@ -161,6 +180,36 @@ function Profile() {
 
   const exitEditMode = () => {
     setSearchParams({}, { replace: true });
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setImageError("Please select an image file.");
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setImageError("Image must be under 2 MB.");
+      return;
+    }
+
+    setImageError("");
+    setUploadingImage(true);
+
+    try {
+      const url = await uploadProfileImage(user.uid, file);
+      await updateUserProfile(user.uid, { photoURL: url });
+      setProfile((prev) => ({ ...prev, photoURL: url }));
+    } catch (err) {
+      console.error(err);
+      setImageError("Failed to upload image. Please try again.");
+    } finally {
+      setUploadingImage(false);
+      e.target.value = "";
+    }
   };
 
   const handleCancel = () => {
@@ -363,6 +412,46 @@ function Profile() {
         {successMessage && (
           <div className="alert alert-success">{successMessage}</div>
         )}
+
+        <div className="profile-avatar-section">
+          <div className="profile-avatar-wrap">
+            {profile.photoURL ? (
+              <img
+                className="profile-avatar-img"
+                src={profile.photoURL}
+                alt={`${profile.displayName || "User"}'s avatar`}
+              />
+            ) : (
+              <div className="profile-avatar-placeholder">
+                {(profile.displayName || user.email || "?")[0].toUpperCase()}
+              </div>
+            )}
+
+            {isEditing && (
+              <button
+                type="button"
+                className="profile-avatar-overlay"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingImage}
+                title="Change photo"
+              >
+                {uploadingImage ? "..." : "Edit"}
+              </button>
+            )}
+          </div>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={handleImageChange}
+          />
+
+          {imageError && (
+            <p className="profile-image-error">{imageError}</p>
+          )}
+        </div>
 
         {!isEditing ? (
           <>

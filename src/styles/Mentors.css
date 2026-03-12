@@ -1,0 +1,252 @@
+/* ── Mentor List ──────────────────────────────────────────────── */
+
+.mentor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.mentor-list-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.mentor-search {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: #fff;
+  color: #0F172A;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.mentor-search:focus {
+  border-color: #4F46E5;
+}
+
+.mentor-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.mentor-tag-filter {
+  padding: 0.3rem 0.75rem;
+  border: 1px solid #C7D2FE;
+  border-radius: 99px;
+  background: #EEF2FF;
+  color: #4F46E5;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.mentor-tag-filter:hover {
+  background: #C7D2FE;
+}
+
+.mentor-tag-filter-active {
+  background: #4F46E5;
+  color: #fff;
+  border-color: #4F46E5;
+}
+
+.mentor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.mentor-empty {
+  color: #94A3B8;
+  font-size: 0.95rem;
+  padding: 1rem 0;
+}
+
+/* ── Mentor Card ──────────────────────────────────────────────── */
+
+.mentor-card {
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+
+.mentor-card:hover {
+  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.1);
+  transform: translateY(-2px);
+}
+
+.mentor-card-top {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mentor-card-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4F46E5, #7C3AED);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mentor-card-name {
+  font-weight: 600;
+  color: #0F172A;
+  font-size: 0.95rem;
+}
+
+.mentor-card-headline {
+  color: #475569;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.mentor-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.mentor-tag {
+  background: #EEF2FF;
+  color: #4F46E5;
+  border-radius: 99px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.75rem;
+}
+
+.mentor-card-meta {
+  color: #94A3B8;
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.mentor-card-btn {
+  margin-top: auto;
+  padding: 0.45rem 1rem;
+  background: #4F46E5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: background 0.15s;
+}
+
+.mentor-card-btn:hover {
+  background: #4338CA;
+}
+
+/* ── Mentor Detail ────────────────────────────────────────────── */
+
+.mentor-detail-page {
+  min-height: 100vh;
+  background: #F8FAFC;
+  padding: 2rem 1rem;
+}
+
+.mentor-detail-inner {
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.mentor-detail-back {
+  background: none;
+  border: none;
+  color: #4F46E5;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.mentor-detail-back:hover {
+  color: #4338CA;
+}
+
+.mentor-detail-card {
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.mentor-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.mentor-detail-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4F46E5, #7C3AED);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mentor-detail-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0 0 0.2rem;
+}
+
+.mentor-detail-headline {
+  color: #475569;
+  margin: 0;
+}
+
+.mentor-detail-section {
+  margin-top: 1rem;
+}
+
+.mentor-detail-label {
+  font-size: 0.8rem;
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.4rem;
+}
+
+.mentor-detail-value {
+  color: #0F172A;
+  font-size: 0.95rem;
+}
+
+.mentor-detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}

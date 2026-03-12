@@ -1,68 +1,121 @@
+/* =====================================================
+   EntreHub — Global Reset & Design Tokens
+   ===================================================== */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* Brand — indigo scale */
+  --brand:        #4F46E5;
+  --brand-hover:  #4338CA;
+  --brand-dark:   #3730A3;
+  --brand-light:  #EEF2FF;
+  --brand-border: #E0E7FF;
+
+  /* Page & surface */
+  --bg:           #F8FAFC;
+  --surface:      #FFFFFF;
+
+  /* Borders */
+  --border:       #E2E8F0;
+  --border-strong:#CBD5E1;
+
+  /* Text */
+  --text:         #0F172A;
+  --text-sub:     #475569;
+  --text-muted:   #94A3B8;
+
+  /* Semantic */
+  --success:        #059669;
+  --success-bg:     #F0FDF4;
+  --success-border: #BBF7D0;
+  --error:          #DC2626;
+  --error-bg:       #FEF2F2;
+  --error-border:   #FECACA;
+
+  /* Radius */
+  --r-sm:   6px;
+  --r-md:   10px;
+  --r-lg:   14px;
+  --r-full: 9999px;
+
+  /* Typography */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+               "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
   line-height: 1.5;
-  font-weight: 400;
+  color: #0F172A;
+  background-color: #F8FAFC;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  /* Rendering */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100%;
+  background-color: #F8FAFC;
+  color: #0F172A;
+}
+
+/* Undo Vite's opinionated button reset */
+button {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  background: none;
+  border: none;
 }
 
 a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+  color: var(--brand);
+  text-decoration: none;
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+a:hover {
+  color: var(--brand-dark);
+}
+
+#root {
+  width: 100%;
   min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* =====================================================
+   App-level loading state (used in App.jsx)
+   ===================================================== */
+
+.loading-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+  gap: 1.25rem;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-container p {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.9rem;
   font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
 }

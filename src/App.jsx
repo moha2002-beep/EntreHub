@@ -4,7 +4,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
-import EditProfile from "./pages/EditProfile";
+import MentorDetail from "./pages/MentorDetail";
 import "./App.css";
 
 function App() {
@@ -33,15 +33,24 @@ function App() {
         path="/dashboard"
         element={user ? <Dashboard /> : <Navigate to="/login" replace />}
       />
-
-      {/* Phase 3 */}
       <Route
         path="/profile"
         element={user ? <Profile /> : <Navigate to="/login" replace />}
       />
+
+      {/* /edit-profile redirects to the profile page's built-in edit mode */}
       <Route
         path="/edit-profile"
-        element={user ? <EditProfile /> : <Navigate to="/login" replace />}
+        element={
+          user
+            ? <Navigate to="/profile?mode=edit" replace />
+            : <Navigate to="/login" replace />
+        }
+      />
+
+      <Route
+        path="/mentor/:uid"
+        element={user ? <MentorDetail /> : <Navigate to="/login" replace />}
       />
 
       <Route

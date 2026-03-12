@@ -1,179 +1,107 @@
-/* Register Page Container */
+/* =====================================================
+   Register.css — Auth pages (Login + Register)
+   ===================================================== */
+
 .register-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 1rem;
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
-    Cantarell, sans-serif;
+  background: linear-gradient(135deg, var(--brand) 0%, #7C3AED 100%);
+  padding: 2rem 1rem;
 }
 
 .register-container {
   width: 100%;
-  max-width: 600px;
+  max-width: 520px;
 }
 
-/* Register Content */
 .register-content {
-  animation: fadeIn 0.3s ease-in;
+  animation: fadeIn 0.2s ease;
 }
 
 .register-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   color: #ffffff;
 }
 
 .register-header h1 {
-  font-size: 2.5rem;
+  font-size: 1.875rem;
   font-weight: 700;
-  margin: 0 0 0.5rem 0;
-  letter-spacing: -0.5px;
+  margin: 0 0 0.35rem 0;
+  letter-spacing: -0.025em;
 }
 
 .register-header p {
-  font-size: 1.125rem;
+  font-size: 0.95rem;
   margin: 0;
-  opacity: 0.95;
-  font-weight: 300;
-  letter-spacing: 0.3px;
+  opacity: 0.8;
 }
 
-/* Success Message */
+/* Post-submit success card */
 .success-message {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 3rem 2rem;
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  padding: 2.75rem 2rem;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  animation: slideUp 0.4s ease-out;
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.22);
+  animation: slideUp 0.3s ease-out;
 }
 
 .success-icon {
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  width: 68px;
+  height: 68px;
+  background: linear-gradient(135deg, #10b981 0%, var(--success) 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 3rem;
-  color: white;
-  margin: 0 auto 1.5rem;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-  animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  font-size: 1.85rem;
+  color: #ffffff;
+  margin: 0 auto 1.25rem;
+  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.28);
+  animation: popIn 0.45s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .success-message h2 {
-  color: #1f2937;
-  font-size: 1.75rem;
-  margin: 0 0 0.5rem 0;
+  color: var(--text);
+  font-size: 1.375rem;
   font-weight: 700;
+  margin: 0 0 0.4rem 0;
+  letter-spacing: -0.01em;
 }
 
 .success-message p {
-  color: #6b7280;
-  font-size: 1rem;
-  margin: 0.75rem 0;
+  color: var(--text-sub);
+  font-size: 0.9rem;
+  margin: 0.4rem 0;
   line-height: 1.6;
 }
 
-.account-type {
-  background: #f3f4f6;
-  padding: 0.75rem 1rem;
-  border-radius: 6px;
-  margin-top: 1.5rem !important;
-  font-weight: 500;
-}
-
-.account-type strong {
-  color: #3b82f6;
-  text-transform: capitalize;
-}
-
 .redirect-message {
-  color: #9ca3af;
-  font-size: 0.9rem;
-  margin-top: 1.5rem !important;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin-top: 1rem !important;
   font-style: italic;
 }
 
-/* Animations */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0);    }
 }
 
 @keyframes popIn {
-  0% {
-    transform: scale(0) rotate(-45deg);
-  }
-  100% {
-    transform: scale(1) rotate(0deg);
-  }
+  0%   { transform: scale(0) rotate(-45deg); }
+  100% { transform: scale(1) rotate(0deg);   }
 }
 
-/* Responsive Design */
-@media (max-width: 640px) {
-  .register-page {
-    padding: 1rem;
-  }
-
-  .register-header h1 {
-    font-size: 2rem;
-  }
-
-  .register-header p {
-    font-size: 1rem;
-  }
-
-  .success-message {
-    padding: 2rem 1.5rem;
-  }
-
-  .success-icon {
-    width: 70px;
-    height: 70px;
-    font-size: 2.5rem;
-  }
-
-  .success-message h2 {
-    font-size: 1.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .register-header h1 {
-    font-size: 1.75rem;
-  }
-
-  .success-message {
-    padding: 1.5rem;
-  }
-
-  .success-message h2 {
-    font-size: 1.25rem;
-  }
-
-  .success-message p {
-    font-size: 0.95rem;
-  }
+@media (max-width: 560px) {
+  .register-header h1 { font-size: 1.625rem; }
+  .success-message    { padding: 2rem 1.5rem; }
 }

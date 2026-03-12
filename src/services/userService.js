@@ -1,8 +1,12 @@
 import {
+  collection,
   doc,
   getDoc,
+  getDocs,
+  query,
   setDoc,
   updateDoc,
+  where,
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
@@ -84,6 +88,22 @@ export async function updateUserProfile(uid, data) {
     });
   } catch (error) {
     console.error("Error updating profile:", error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch all users with role === "mentor" from Firestore.
+ * Demonstrates: collection reference, query with where, getDocs.
+ */
+export async function getMentors() {
+  try {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("role", "==", "mentor"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+  } catch (error) {
+    console.error("Error fetching mentors:", error);
     throw error;
   }
 }

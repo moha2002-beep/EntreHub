@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { getUserProfile } from "../services/userService";
 import { logoutUser } from "../services/authService";
 import { getCompleteness } from "../utils/profileCompletedness";
+import MentorList from "../components/MentorList";
 import "../styles/Dashboard.css";
 
 function Dashboard() {
@@ -279,10 +280,7 @@ function Dashboard() {
             <section className="dashboard-card">
               <h2 className="dashboard-card-title">Mentors</h2>
               <div className="dashboard-card-body">
-                <p>
-                  A curated list of mentors and suggested matches for your role
-                  will appear here.
-                </p>
+                <MentorList />
               </div>
             </section>
           )}
