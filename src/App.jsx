@@ -5,6 +5,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import MentorDetail from "./pages/MentorDetail";
+import Bookings from "./pages/Bookings";
 import "./App.css";
 
 function App() {
@@ -51,6 +52,10 @@ function App() {
       <Route
         path="/mentor/:uid"
         element={user ? <MentorDetail /> : <Navigate to="/login" replace />}
+      />
+      <Route
+        path="/bookings"
+        element={user ? <Bookings /> : <Navigate to="/login" replace />}
       />
 
       <Route

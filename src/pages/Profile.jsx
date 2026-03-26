@@ -14,9 +14,10 @@ const LIST_FIELDS = new Set([
   "expertiseTags",
   "investmentFocus",
   "portfolio",
+  "preferredStages", // mentor: which startup stages they prefer
 ]);
 
-const NUMBER_FIELDS = new Set(["yearsOfExperience"]);
+const NUMBER_FIELDS = new Set(["yearsOfExperience", "hourlyRate", "maxHourlyRate"]);
 
 const roleLabelMap = {
   entrepreneur: "Entrepreneur",
@@ -32,6 +33,19 @@ const valueLabelMap = {
     scaling: "Scaling",
   },
   availability: {
+    weekdays: "Weekdays",
+    weekends: "Weekends",
+    flexible: "Flexible",
+  },
+  // New: used when displaying preferredStages (a LIST_FIELD) in view mode
+  preferredStages: {
+    idea: "Idea Stage",
+    mvp: "MVP",
+    growth: "Growth",
+    scaling: "Scaling",
+  },
+  // New: used when displaying availabilityPref in view mode
+  availabilityPref: {
     weekdays: "Weekdays",
     weekends: "Weekends",
     flexible: "Flexible",
@@ -81,7 +95,11 @@ function formatValue(key, value) {
 
   if (LIST_FIELDS.has(key)) {
     const list = parseCommaList(value);
-    return list.length ? list.join(", ") : "Not provided";
+    if (!list.length) return "Not provided";
+    // Apply a label map when one exists (e.g. "idea" → "Idea Stage")
+    const labelMap = valueLabelMap[key];
+    if (labelMap) return list.map((v) => labelMap[v.trim()] || v).join(", ");
+    return list.join(", ");
   }
 
   if (typeof value === "object" && typeof value.toDate === "function") {
@@ -609,7 +627,17 @@ function Profile() {
                       >
                         <option value="">-- Select --</option>
 
-                        {field.key === "currentStage" && (
+                        {/* Dynamic options: field config supplies the list */}
+                        {field.options
+                          ? field.options.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))
+                          : null}
+
+                        {/* Hardcoded options for fields without a config list */}
+                        {!field.options && field.key === "currentStage" && (
                           <>
                             <option value="idea">Idea Stage</option>
                             <option value="mvp">MVP</option>
@@ -618,7 +646,7 @@ function Profile() {
                           </>
                         )}
 
-                        {field.key === "availability" && (
+                        {!field.options && field.key === "availability" && (
                           <>
                             <option value="weekdays">Weekdays</option>
                             <option value="weekends">Weekends</option>
@@ -637,6 +665,51 @@ function Profile() {
                         onChange={handleInputChange}
                         disabled={saving}
                       />
+                    )}
+
+                    {/*
+                      checkboxgroup — renders a row of styled checkboxes.
+                      The value in formData is stored as a comma-separated
+                      string (same as LIST_FIELDS), so parseCommaList()
+                      converts it to an array for the checked state, and
+                      we call handleInputChange with a synthetic event to
+                      write it back — consistent with every other field.
+                    */}
+                    {field.type === "checkboxgroup" && (
+                      <div className="profile-checkbox-group">
+                        {(field.options || []).map((opt) => {
+                          const currentArr = parseCommaList(
+                            formData[field.key] || ""
+                          );
+                          const isChecked = currentArr.includes(opt.value);
+                          return (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              disabled={saving}
+                              aria-pressed={isChecked}
+                              className={`profile-checkbox-option${isChecked ? " profile-checkbox-option-checked" : ""}`}
+                              onClick={() => {
+                                const next = isChecked
+                                  ? currentArr.filter((v) => v !== opt.value)
+                                  : [...currentArr, opt.value];
+                                handleInputChange({
+                                  target: {
+                                    name:  field.key,
+                                    value: next.join(", "),
+                                  },
+                                });
+                              }}
+                            >
+                              <span
+                                className={`profile-checkbox-box${isChecked ? " profile-checkbox-box-checked" : ""}`}
+                                aria-hidden="true"
+                              />
+                              <span>{opt.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     )}
 
                     {field.type === "date" && (

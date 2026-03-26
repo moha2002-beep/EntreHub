@@ -11,6 +11,16 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 
+// Pre-built option list for the availability hour select fields.
+// Covers 6:00 AM – 10:00 PM in 1-hour increments.
+const HOUR_OPTIONS = Array.from({ length: 17 }, (_, i) => {
+  const h      = i + 6; // 6 → 22
+  const period = h < 12 ? "AM" : "PM";
+  const h12    = h % 12 || 12;
+  const value  = `${String(h).padStart(2, "0")}:00`;
+  return { value, label: `${h12}:00 ${period}` };
+});
+
 /**
  * Load a user's complete profile from Firestore
  * This function demonstrates:
@@ -136,6 +146,25 @@ export function getRoleSpecificFields(role) {
           type: "date",
           required: false,
         },
+        // Used by the recommendation engine (component 5 — availability alignment)
+        {
+          key: "availabilityPref",
+          label: "Your availability",
+          type: "select",
+          options: [
+            { value: "weekdays", label: "Weekdays" },
+            { value: "weekends", label: "Weekends" },
+            { value: "flexible", label: "Flexible" },
+          ],
+          required: false,
+        },
+        // Used by the recommendation engine (component 7 — budget match)
+        {
+          key: "maxHourlyRate",
+          label: "Max hourly rate budget (£)",
+          type: "number",
+          required: false,
+        },
       ],
     },
     mentor: {
@@ -150,14 +179,50 @@ export function getRoleSpecificFields(role) {
         },
         {
           key: "availability",
-          label: "Availability",
+          label: "Availability (which days)",
           type: "select",
           required: true,
+        },
+        // New: what hours the mentor is available each day — rendered as a select
+        {
+          key: "availabilityHoursStart",
+          label: "Available from",
+          type: "select",
+          options: HOUR_OPTIONS,
+          required: false,
+        },
+        {
+          key: "availabilityHoursEnd",
+          label: "Available until",
+          type: "select",
+          options: HOUR_OPTIONS,
+          required: false,
         },
         {
           key: "yearsOfExperience",
           label: "Years of Experience",
           type: "number",
+          required: false,
+        },
+        // Used by the recommendation engine (component 7 — budget match)
+        {
+          key: "hourlyRate",
+          label: "Hourly Rate (£)",
+          type: "number",
+          required: false,
+        },
+        // Used by the recommendation engine (component 3 — stage alignment)
+        // Stored as an array: ["idea", "mvp"] etc.
+        {
+          key: "preferredStages",
+          label: "Preferred startup stages",
+          type: "checkboxgroup",
+          options: [
+            { value: "idea",    label: "Idea Stage" },
+            { value: "mvp",     label: "MVP"        },
+            { value: "growth",  label: "Growth"     },
+            { value: "scaling", label: "Scaling"    },
+          ],
           required: false,
         },
       ],

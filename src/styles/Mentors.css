@@ -30,31 +30,234 @@
   border-color: #4F46E5;
 }
 
-.mentor-tags-row {
+/* ── Multi-select tag dropdown ────────────────────────────────── */
+
+/* Outer wrapper — `position: relative` so the panel anchors to it */
+.mentor-tag-dropdown {
+  position: relative;
+}
+
+/* Trigger button — matches the search input height and border style */
+.mentor-tag-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  background: #fff;
+  color: #475569;
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  min-width: 200px;
+}
+
+.mentor-tag-trigger:hover {
+  border-color: #C7D2FE;
+}
+
+.mentor-tag-trigger-open {
+  border-color: #4F46E5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* Tinted trigger when tags are selected */
+.mentor-tag-trigger-active {
+  border-color: #4F46E5;
+  background: #EEF2FF;
+  color: #4338CA;
+}
+
+.mentor-tag-trigger-label {
+  flex: 1;
+  text-align: left;
+}
+
+/* Badge showing how many tags are selected */
+.mentor-tag-trigger-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  background: #4F46E5;
+  color: #fff;
+  border-radius: 99px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.mentor-tag-trigger-chevron {
+  font-size: 0.7rem;
+  color: #94A3B8;
+}
+
+/* Dropdown panel */
+.mentor-tag-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 260px;
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+  z-index: 50;
+  overflow: hidden;
+}
+
+.mentor-tag-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.mentor-tag-panel-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.mentor-tag-clear {
+  font-size: 0.78rem;
+  color: #4F46E5;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+
+.mentor-tag-clear:hover {
+  text-decoration: underline;
+}
+
+/* Tag option rows */
+.mentor-tag-options {
+  display: flex;
+  flex-direction: column;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 0.35rem 0;
+}
+
+.mentor-tag-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.9rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.1s;
+}
+
+.mentor-tag-option:hover {
+  background: #F8FAFC;
+}
+
+.mentor-tag-option-checked {
+  background: #F5F3FF;
+}
+
+.mentor-tag-option-checked:hover {
+  background: #EDE9FE;
+}
+
+/* Colored pill inside each option row */
+.mentor-tag-pill {
+  display: inline-block;
+  padding: 0.22rem 0.65rem;
+  border-radius: 99px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+/* Checkbox indicator on the right */
+.mentor-tag-checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #E2E8F0;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  color: transparent;
+  flex-shrink: 0;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.mentor-tag-checkbox-checked {
+  background: #4F46E5;
+  border-color: #4F46E5;
+  color: #fff;
+}
+
+/* ── Active tag pills shown below the controls ────────────────── */
+
+.mentor-active-tags {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.4rem;
 }
 
-.mentor-tag-filter {
-  padding: 0.3rem 0.75rem;
-  border: 1px solid #C7D2FE;
+.mentor-active-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.35rem 0.25rem 0.65rem;
   border-radius: 99px;
-  background: #EEF2FF;
-  color: #4F46E5;
-  font-size: 0.78rem;
+  border: 1px solid transparent;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.mentor-active-tag-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  font-size: 0.9rem;
+  line-height: 1;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  padding: 0;
+  opacity: 0.7;
+  font-family: inherit;
 }
 
-.mentor-tag-filter:hover {
-  background: #C7D2FE;
+.mentor-active-tag-remove:hover {
+  opacity: 1;
 }
 
-.mentor-tag-filter-active {
-  background: #4F46E5;
-  color: #fff;
-  border-color: #4F46E5;
+.mentor-active-tags-clear {
+  font-size: 0.78rem;
+  color: #94A3B8;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  font-family: inherit;
+}
+
+.mentor-active-tags-clear:hover {
+  color: #475569;
+  text-decoration: underline;
 }
 
 .mentor-grid {
@@ -89,8 +292,14 @@
 
 .mentor-card-top {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.75rem;
+}
+
+/* Fills the space between the avatar and the badge */
+.mentor-card-info {
+  flex: 1;
+  min-width: 0; /* prevents text overflow breaking the layout */
 }
 
 .mentor-card-avatar {
@@ -105,6 +314,14 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.mentor-card-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .mentor-card-name {
@@ -214,6 +431,14 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.mentor-detail-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .mentor-detail-name {
@@ -249,4 +474,86 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
+}
+
+.mentor-detail-rate {
+  font-weight: 700;
+  color: #4F46E5;
+  font-size: 1rem;
+}
+
+/* ── Match score badge ────────────────────────────────────────── */
+
+.mentor-score-badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem 0.5rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.1;
+  min-width: 48px;
+}
+
+.mentor-score-badge-label {
+  font-size: 0.62rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+}
+
+/* Green — strong match (≥ 70%) */
+.mentor-score-badge-green {
+  background: #DCFCE7;
+  color: #15803D;
+}
+
+/* Amber — partial match (40–69%) */
+.mentor-score-badge-amber {
+  background: #FEF9C3;
+  color: #A16207;
+}
+
+/* Red — low match (< 40%) */
+.mentor-score-badge-red {
+  background: #FFE4E6;
+  color: #BE123C;
+}
+
+/* ── Profile-completion prompt ────────────────────────────────── */
+
+.mentor-match-prompt {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 1rem;
+  background: #EEF2FF;
+  border: 1px solid #C7D2FE;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #4338CA;
+  flex-wrap: wrap;
+}
+
+.mentor-match-prompt-icon {
+  font-size: 0.9rem;
+  color: #4F46E5;
+}
+
+.mentor-match-prompt-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #4F46E5;
+  cursor: pointer;
+  font-family: inherit;
+  margin-left: auto;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }

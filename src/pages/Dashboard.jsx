@@ -4,6 +4,10 @@ import { useAuth } from "../context/AuthContext";
 import { getUserProfile } from "../services/userService";
 import { logoutUser } from "../services/authService";
 import { getCompleteness } from "../utils/profileCompletedness";
+import {
+  listenToMentorBookings,
+  listenToEntrepreneurBookings,
+} from "../services/bookingService";
 import MentorList from "../components/MentorList";
 import "../styles/Dashboard.css";
 
@@ -32,6 +36,31 @@ function Dashboard() {
 
     loadProfile();
   }, [user]);
+
+  // ── Real-time pending-booking count for the nav badge ─────────────────
+  // This demonstrates that onSnapshot isn't limited to dedicated pages —
+  // you can open a lightweight listener anywhere you need live data.
+  // The cleanup (return () => unsub?.()) runs when Dashboard unmounts,
+  // preventing a dangling listener after the user logs out.
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    if (!profile) return;
+
+    let unsub;
+
+    const countPending = (bookings) => {
+      setPendingCount(bookings.filter((b) => b.status === "pending").length);
+    };
+
+    if (profile.role === "mentor") {
+      unsub = listenToMentorBookings(user.uid, countPending, console.error);
+    } else if (profile.role === "entrepreneur") {
+      unsub = listenToEntrepreneurBookings(user.uid, countPending, console.error);
+    }
+
+    return () => unsub?.();
+  }, [profile, user]);
 
   const handleLogout = async () => {
     const result = await logoutUser();
@@ -102,6 +131,21 @@ function Dashboard() {
           >
             Mentors
           </button>
+          {(profile?.role === "mentor" || profile?.role === "entrepreneur") && (
+            <button
+              type="button"
+              className={
+                "dashboard-nav-link" +
+                (activeSection === "bookings" ? " dashboard-nav-link-active" : "")
+              }
+              onClick={() => setActiveSection("bookings")}
+            >
+              Bookings
+              {pendingCount > 0 && (
+                <span className="dashboard-nav-badge">{pendingCount}</span>
+              )}
+            </button>
+          )}
           <button
             type="button"
             className={
@@ -129,7 +173,17 @@ function Dashboard() {
         </nav>
 
         <div className="dashboard-user">
-          <div className="dashboard-avatar">{initials}</div>
+          <div className="dashboard-avatar">
+            {profile.photoURL ? (
+              <img
+                src={profile.photoURL}
+                alt={`${displayName}'s avatar`}
+                className="dashboard-avatar-img"
+              />
+            ) : (
+              initials
+            )}
+          </div>
           <div>
             <div>{displayName}</div>
             <div style={{ fontSize: "0.8rem", color: "#9ca3af" }}>
@@ -281,6 +335,43 @@ function Dashboard() {
               <h2 className="dashboard-card-title">Mentors</h2>
               <div className="dashboard-card-body">
                 <MentorList />
+              </div>
+            </section>
+          )}
+
+          {activeSection === "bookings" && (
+            <section className="dashboard-card">
+              <h2 className="dashboard-card-title">
+                Bookings
+                {pendingCount > 0 && (
+                  <span className="dashboard-nav-badge" style={{ marginLeft: "0.5rem" }}>
+                    {pendingCount} pending
+                  </span>
+                )}
+              </h2>
+              <div className="dashboard-card-body">
+                {profile?.role === "mentor" && (
+                  <p>
+                    You have{" "}
+                    <strong>{pendingCount}</strong>{" "}
+                    pending booking {pendingCount === 1 ? "request" : "requests"}.
+                    Open the Bookings page to accept or decline them.
+                  </p>
+                )}
+                {profile?.role === "entrepreneur" && (
+                  <p>
+                    Track your mentoring session requests and their status.
+                  </p>
+                )}
+                <div className="dashboard-action-row">
+                  <button
+                    type="button"
+                    className="dashboard-action-btn"
+                    onClick={() => navigate("/bookings")}
+                  >
+                    Go to Bookings
+                  </button>
+                </div>
               </div>
             </section>
           )}

@@ -326,3 +326,56 @@
   .profile-field        { grid-template-columns: 1fr; gap: 0.2rem; }
   .profile-field-label  { padding-top: 0; }
 }
+
+/* ── Checkbox group (used for preferredStages) ─────────────────────────── */
+
+.profile-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.profile-checkbox-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #475569;
+  background: #fff;
+  cursor: pointer;
+  user-select: none;
+  font-family: inherit;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.profile-checkbox-option:hover:not(:disabled) {
+  border-color: #A5B4FC;
+}
+
+/* Custom checkbox box (replaces the native <input>) */
+.profile-checkbox-box {
+  width: 15px;
+  height: 15px;
+  border: 2px solid #CBD5E1;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.profile-checkbox-option-checked {
+  border-color: #4F46E5;
+  background: #EEF2FF;
+  color: #4338CA;
+}
+
+.profile-checkbox-box-checked {
+  background: #4F46E5;
+  border-color: #4F46E5;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 4l3 3 5-6' stroke='white' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 65%;
+}
