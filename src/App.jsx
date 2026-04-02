@@ -6,6 +6,8 @@ import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import MentorDetail from "./pages/MentorDetail";
 import Bookings from "./pages/Bookings";
+import Community from "./pages/Community";
+import PostDetail from "./pages/PostDetail";
 import "./App.css";
 
 function App() {
@@ -56,6 +58,14 @@ function App() {
       <Route
         path="/bookings"
         element={user ? <Bookings /> : <Navigate to="/login" replace />}
+      />
+      <Route
+        path="/community"
+        element={user ? <Community /> : <Navigate to="/login" replace />}
+      />
+      <Route
+        path="/community/:postId"
+        element={user ? <PostDetail /> : <Navigate to="/login" replace />}
       />
 
       <Route

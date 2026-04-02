@@ -113,11 +113,8 @@ function Dashboard() {
           </button>
           <button
             type="button"
-            className={
-              "dashboard-nav-link" +
-              (activeSection === "profile" ? " dashboard-nav-link-active" : "")
-            }
-            onClick={() => setActiveSection("profile")}
+            className="dashboard-nav-link"
+            onClick={() => navigate("/profile")}
           >
             Profile
           </button>
@@ -393,9 +390,18 @@ function Dashboard() {
               <h2 className="dashboard-card-title">Community feed</h2>
               <div className="dashboard-card-body">
                 <p>
-                  Community updates, founder stories, and discussions will show
-                  here in a future iteration.
+                  Ask questions, share wins, and connect with entrepreneurs,
+                  mentors, and investors across the EntreHub community.
                 </p>
+                <div className="dashboard-action-row">
+                  <button
+                    type="button"
+                    className="dashboard-action-btn"
+                    onClick={() => navigate("/community")}
+                  >
+                    Go to Community Feed
+                  </button>
+                </div>
               </div>
             </section>
           )}

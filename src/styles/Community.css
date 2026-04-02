@@ -1,0 +1,701 @@
+/* =====================================================
+   Community.css
+   Styles for: Community page, PostDetail page,
+   PostCard, CreatePost, and ReplyThread components.
+   ===================================================== */
+
+/* ── Page shell ──────────────────────────────────────── */
+
+.community-page {
+  min-height: 100vh;
+  background: var(--bg);
+  padding: 2rem 1rem;
+}
+
+/* Single-column feed — max-w-2xl equivalent */
+.community-inner {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ── Page header ─────────────────────────────────────── */
+
+.community-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.community-back {
+  background: none;
+  border: none;
+  color: var(--brand);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: inherit;
+  margin-bottom: 0.5rem;
+  width: fit-content;
+}
+.community-back:hover { color: var(--brand-hover); }
+
+.community-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.community-subtitle {
+  color: var(--text-sub);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* ── Sort + Category controls ────────────────────────── */
+
+.community-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.community-sort {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.community-sort-btn {
+  padding: 0.35rem 0.9rem;
+  border-radius: var(--r-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-sub);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.community-sort-btn:hover {
+  border-color: var(--brand-border);
+  color: var(--brand);
+}
+.community-sort-btn-active {
+  background: var(--brand-light);
+  border-color: var(--brand);
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.community-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.community-cat-btn {
+  padding: 0.28rem 0.75rem;
+  border-radius: var(--r-full);
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-sub);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.community-cat-btn:hover {
+  border-color: var(--brand-border);
+  color: var(--brand);
+}
+.community-cat-btn-active {
+  background: var(--brand-light);
+  border-color: var(--brand);
+  color: var(--brand);
+  font-weight: 600;
+}
+
+/* ── Loading + empty states ──────────────────────────── */
+
+.community-loading {
+  display: flex;
+  justify-content: center;
+  padding: 4rem 0;
+}
+
+/* Override the default white spinner for use on a light background */
+.community-spinner {
+  border-color: var(--border);
+  border-top-color: var(--brand);
+}
+
+.community-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  padding: 3rem 0;
+}
+
+/* ── Feed ────────────────────────────────────────────── */
+
+.community-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ── Shared: role badges ─────────────────────────────── */
+/*
+  Used by PostCard, PostDetail meta row, and ReplyThread.
+  Role badge colours:
+    mentor       — teal
+    entrepreneur — blue
+    investor     — purple
+*/
+
+.post-card-role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--r-full);
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.role-mentor       { background: #CCFBF1; color: #0D9488; }
+.role-entrepreneur { background: #DBEAFE; color: #2563EB; }
+.role-investor     { background: #EDE9FE; color: #7C3AED; }
+
+/* ── Shared: category badges ─────────────────────────── */
+/*
+  Five categories, each with a distinct colour.
+*/
+
+.post-card-cat-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--r-full);
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.community-cat-indigo { background: var(--brand-light);  color: var(--brand); }
+.community-cat-green  { background: var(--success-bg);   color: var(--success); }
+.community-cat-amber  { background: #FFFBEB;             color: #D97706; }
+.community-cat-violet { background: #F5F3FF;             color: #7C3AED; }
+.community-cat-gray   { background: #F1F5F9;             color: var(--text-sub); }
+
+/* ── Shared: timestamp ───────────────────────────────── */
+
+.post-card-time {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ── Shared: upvote button ───────────────────────────── */
+
+.post-card-upvote {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  padding: 0.22rem 0.55rem;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.post-card-upvote:hover {
+  border-color: var(--brand-border);
+  color: var(--brand);
+}
+.post-card-upvote-active {
+  background: var(--brand-light);
+  border-color: var(--brand);
+  color: var(--brand);
+  font-weight: 600;
+}
+
+/* ── Shared: report button ───────────────────────────── */
+
+.post-card-report {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.22rem 0.35rem;
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  transition: color 0.15s;
+  white-space: nowrap;
+}
+.post-card-report:hover { color: var(--error); }
+
+/* ── PostCard ────────────────────────────────────────── */
+
+.post-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-align: left;
+}
+.post-card:hover {
+  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.08);
+  transform: translateY(-1px);
+}
+/* Remove focus ring flash on click; keep it for keyboard nav */
+.post-card:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.post-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.post-card-author {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Push timestamp to the far right */
+.post-card-header .post-card-time {
+  margin-left: auto;
+}
+
+.post-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Body preview — clamp to 2 lines */
+.post-card-preview {
+  font-size: 0.875rem;
+  color: var(--text-sub);
+  line-height: 1.55;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.post-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 0.15rem;
+}
+
+.post-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+}
+
+.post-card-reply-count {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ── CreatePost form ─────────────────────────────────── */
+
+.create-post {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.create-post-heading {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.create-post-error {
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error);
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--r-sm);
+  font-size: 0.85rem;
+}
+
+.create-post-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.create-post-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-sub);
+}
+
+.create-post-input,
+.create-post-textarea,
+.create-post-select {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--surface);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.create-post-input:focus,
+.create-post-textarea:focus,
+.create-post-select:focus {
+  border-color: var(--brand);
+}
+.create-post-textarea {
+  resize: vertical;
+  min-height: 96px;
+  line-height: 1.55;
+}
+
+.create-post-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.create-post-submit {
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: var(--r-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.create-post-submit:hover:not(:disabled) { background: var(--brand-hover); }
+.create-post-submit:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* ── PostDetail ──────────────────────────────────────── */
+
+.post-detail-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.post-detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+/* Push timestamp to the right in the meta row */
+.post-detail-meta .post-card-time {
+  margin-left: auto;
+}
+
+.post-detail-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.35;
+  margin: 0;
+  letter-spacing: -0.015em;
+}
+
+.post-detail-body {
+  font-size: 0.95rem;
+  color: var(--text-sub);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.post-detail-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+/* ── ReplyThread ─────────────────────────────────────── */
+
+.reply-thread {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.reply-thread-count {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin: 0;
+}
+
+.reply-empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.reply-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+/* Individual reply bubble */
+.reply-item {
+  padding: 0.75rem 1rem;
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+/*
+  Mentor reply — teal left accent border + very light teal background.
+  The border-left override uses a higher specificity declaration.
+*/
+.reply-item-mentor {
+  background: #F0FDFA;
+  border-color: #99F6E4;
+  border-left: 3px solid #0D9488;
+}
+
+.reply-item-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.45rem;
+}
+
+.reply-author {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* "Mentor Response" badge — distinct from the role badge */
+.reply-mentor-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.08rem 0.45rem;
+  border-radius: var(--r-full);
+  font-size: 0.66rem;
+  font-weight: 700;
+  background: #CCFBF1;
+  color: #0D9488;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+/* Push time to the far right inside a reply header */
+.reply-time {
+  margin-left: auto;
+}
+
+.reply-item-body {
+  font-size: 0.9rem;
+  color: var(--text-sub);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* Reply compose form */
+.reply-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.reply-form-textarea {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--surface);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.55;
+}
+.reply-form-textarea:focus { border-color: var(--brand); }
+
+.reply-form-error {
+  font-size: 0.85rem;
+  color: var(--error);
+}
+
+.reply-form-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.reply-form-submit {
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  padding: 0.45rem 1.25rem;
+  border-radius: var(--r-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.reply-form-submit:hover:not(:disabled) { background: var(--brand-hover); }
+.reply-form-submit:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* ── Nested replies ──────────────────────────────────── */
+
+/*
+  Children of a reply are wrapped in .reply-children.
+  Because .reply-children is always inside a .reply-item,
+  each level of DOM nesting compounds the padding-left
+  automatically — no depth tracking needed in CSS.
+
+  depth 0 → 0px indent (root replies)
+  depth 1 → 1rem indent
+  depth 2 → 2rem indent
+  ...up to MAX_INDENT_DEPTH (4), then indentation stops.
+*/
+.reply-children {
+  margin-top: 0.6rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* At MAX_INDENT_DEPTH — stop indenting so replies don't get too narrow.
+   A dashed separator replaces the indent border as a visual cue. */
+.reply-children-flat {
+  padding-left: 0;
+  border-left: none;
+  border-top: 1px dashed var(--border);
+  padding-top: 0.5rem;
+}
+
+/* ↩ Reply button shown below each reply body */
+.reply-action-btn {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  padding: 0.15rem 0;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s;
+  display: inline-block;
+  margin-top: 0.25rem;
+}
+.reply-action-btn:hover { color: var(--brand); }
+
+/* ── Inline reply compose form ───────────────────────── */
+
+.inline-reply-form {
+  margin-top: 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* Slightly shorter than the top-level textarea */
+.inline-reply-textarea {
+  min-height: 64px !important;
+  font-size: 0.875rem;
+}
+
+.inline-reply-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.inline-reply-cancel {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-sub);
+  padding: 0.35rem 0.9rem;
+  border-radius: var(--r-sm);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, color 0.15s;
+}
+.inline-reply-cancel:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .community-page  { padding: 1rem 0.75rem; }
+  .community-inner { gap: 1rem; }
+}
