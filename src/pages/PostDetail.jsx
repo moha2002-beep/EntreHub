@@ -1,34 +1,14 @@
 /**
- * PostDetail.jsx
- *
- * Full view for a single community post, including its reply thread.
- * Route: /community/:postId
- *
- * Teaching concepts:
- *
- *   1. useParams
- *      React Router's useParams() extracts the :postId segment from the
- *      URL without any extra wiring.  The value is a plain string that
- *      we pass directly to Firestore queries.
- *
- *   2. listenToPost (onSnapshot on a single document)
- *      We subscribe to the post document so the upvote count updates in
- *      real-time if another user votes while we're on this page.
- *      This is the same onSnapshot pattern used for collections, but
- *      applied to a single doc() reference instead of a query.
- *
- *   3. Two separate onSnapshot subscriptions
- *      PostDetail opens one listener for the post document and delegates
- *      the replies listener to the ReplyThread child component.
- *      Each listener is cleaned up independently via its useEffect return.
+ * PostDetail.jsx — Detailed view for a single post and its replies.
  */
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getUserProfile } from "../services/userService";
-import { listenToPost, upvotePost, flagPost } from "../services/postService";
+import { listenToPost, upvotePost, reportPost } from "../services/postService";
 import ReplyThread from "../components/ReplyThread";
+import Navbar from "../components/Navbar";
 import { formatRelativeTime } from "../utils/formatTime";
 import "../styles/Community.css";
 
@@ -51,19 +31,18 @@ function PostDetail() {
   const navigate    = useNavigate();
   const { user }    = useAuth();
 
-  const [post, setPost]         = useState(null);
-  const [profile, setProfile]   = useState(null);
-  const [loading, setLoading]   = useState(true);
-  const [reported, setReported] = useState(false);
+  const [post, setPost]       = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch current user's role so ReplyThread can set isMentorReply correctly
   useEffect(() => {
     if (!user) return;
     getUserProfile(user.uid).then(setProfile).catch(console.error);
   }, [user]);
 
-  // Real-time listener on the post document
-  // Keeps the upvote count live without a manual re-fetch after voting
+  /**
+   * Real-time listener for the post document.
+   */
   useEffect(() => {
     const unsub = listenToPost(
       postId,
@@ -79,62 +58,69 @@ function PostDetail() {
     return () => unsub();
   }, [postId]);
 
-  const hasVoted = post && (post.upvotedBy || []).includes(user.uid);
+  // Derive interaction state from Firestore data
+  const hasVoted    = post && (post.upvotedBy  || []).includes(user.uid);
+  const hasReported = post && (post.reportedBy || []).includes(user.uid);
 
   const handleUpvote = async () => {
     try {
       await upvotePost(postId, user.uid);
-      // No manual state update needed — listenToPost will fire with the
-      // new upvotes count automatically after the Firestore write completes.
     } catch (err) {
       console.error("Upvote failed:", err);
     }
   };
 
   const handleReport = async () => {
-    if (reported) return;
+    if (hasReported) return;
     try {
-      await flagPost(postId);
-      setReported(true);
+      await reportPost(postId, user.uid);
+      // Firestore listener fires automatically — no local state needed.
     } catch (err) {
       console.error("Report failed:", err);
     }
   };
 
-  // ── Loading state ─────────────────────────────────────────────────────────
+  // Loading state 
   if (loading) {
     return (
-      <div className="community-page">
-        <div className="community-inner">
-          <div className="community-loading">
-            <div className="spinner community-spinner" />
+      <div className="page-shell">
+        <Navbar />
+        <div className="page-body">
+          <div className="loading-state">
+            <div className="spinner spinner-light" />
+            <p className="loading-state-text">Loading post...</p>
           </div>
         </div>
       </div>
     );
   }
 
-  // ── Not found ─────────────────────────────────────────────────────────────
+  //  Not found 
   if (!post) {
     return (
-      <div className="community-page">
-        <div className="community-inner">
-          <button
-            type="button"
-            className="community-back"
-            onClick={() => navigate("/community")}
-          >
-            ← Back to Feed
-          </button>
-          <p className="community-empty">Post not found.</p>
+      <div className="page-shell">
+        <Navbar />
+        <div className="page-body">
+          <div className="community-inner">
+            <button type="button" className="community-back" onClick={() => navigate("/community")}>
+              ← Back to Feed
+            </button>
+            <div className="empty-state">
+              <div className="empty-state-icon">🔍</div>
+              <h2 className="empty-state-heading">Post not found</h2>
+              <p className="empty-state-text">This post may have been removed or the link is invalid.</p>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
-  // ── Main render ───────────────────────────────────────────────────────────
+  //  Main render 
   return (
-    <div className="community-page">
+    <div className="page-shell">
+      <Navbar />
+      <div className="page-body">
       <div className="community-inner">
 
         <button
@@ -180,8 +166,10 @@ function PostDetail() {
               type="button"
               className="post-card-report"
               onClick={handleReport}
+              disabled={hasReported}
+              title={hasReported ? "You have already reported this post" : "Report post"}
             >
-              {reported ? "Reported" : "⚑ Report"}
+              {hasReported ? "Reported" : "⚑ Report"}
             </button>
           </div>
         </div>
@@ -192,6 +180,7 @@ function PostDetail() {
           authorRole={profile?.role || "entrepreneur"}
         />
 
+      </div>
       </div>
     </div>
   );

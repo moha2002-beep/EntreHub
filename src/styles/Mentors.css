@@ -17,36 +17,35 @@
   flex: 1;
   min-width: 200px;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #E2E8F0;
-  border-radius: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
   font-size: 0.9rem;
-  background: #fff;
-  color: #0F172A;
+  background: var(--surface);
+  color: var(--text);
   outline: none;
   transition: border-color 0.15s;
 }
 
 .mentor-search:focus {
-  border-color: #4F46E5;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 /* ── Multi-select tag dropdown ────────────────────────────────── */
 
-/* Outer wrapper — `position: relative` so the panel anchors to it */
 .mentor-tag-dropdown {
   position: relative;
 }
 
-/* Trigger button — matches the search input height and border style */
 .mentor-tag-trigger {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.85rem;
-  border: 1px solid #E2E8F0;
-  border-radius: 8px;
-  background: #fff;
-  color: #475569;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--text-sub);
   font-size: 0.9rem;
   font-family: inherit;
   cursor: pointer;
@@ -56,19 +55,18 @@
 }
 
 .mentor-tag-trigger:hover {
-  border-color: #C7D2FE;
+  border-color: var(--brand-border);
 }
 
 .mentor-tag-trigger-open {
-  border-color: #4F46E5;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
-/* Tinted trigger when tags are selected */
 .mentor-tag-trigger-active {
-  border-color: #4F46E5;
-  background: #EEF2FF;
-  color: #4338CA;
+  border-color: var(--brand);
+  background: var(--brand-light);
+  color: var(--brand-dark);
 }
 
 .mentor-tag-trigger-label {
@@ -76,7 +74,6 @@
   text-align: left;
 }
 
-/* Badge showing how many tags are selected */
 .mentor-tag-trigger-count {
   display: inline-flex;
   align-items: center;
@@ -84,7 +81,7 @@
   min-width: 20px;
   height: 20px;
   padding: 0 5px;
-  background: #4F46E5;
+  background: var(--brand);
   color: #fff;
   border-radius: 99px;
   font-size: 0.7rem;
@@ -93,7 +90,7 @@
 
 .mentor-tag-trigger-chevron {
   font-size: 0.7rem;
-  color: #94A3B8;
+  color: var(--text-muted);
 }
 
 /* Dropdown panel */
@@ -102,10 +99,10 @@
   top: calc(100% + 6px);
   left: 0;
   min-width: 260px;
-  background: #fff;
-  border: 1px solid #E2E8F0;
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-lg);
   z-index: 50;
   overflow: hidden;
 }
@@ -115,20 +112,20 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.65rem 0.9rem;
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid var(--bg);
 }
 
 .mentor-tag-panel-title {
   font-size: 0.78rem;
   font-weight: 600;
-  color: #94A3B8;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .mentor-tag-clear {
   font-size: 0.78rem;
-  color: #4F46E5;
+  color: var(--brand);
   background: none;
   border: none;
   cursor: pointer;
@@ -140,7 +137,6 @@
   text-decoration: underline;
 }
 
-/* Tag option rows */
 .mentor-tag-options {
   display: flex;
   flex-direction: column;
@@ -163,18 +159,17 @@
 }
 
 .mentor-tag-option:hover {
-  background: #F8FAFC;
+  background: var(--bg);
 }
 
 .mentor-tag-option-checked {
-  background: #F5F3FF;
+  background: var(--brand-light);
 }
 
 .mentor-tag-option-checked:hover {
-  background: #EDE9FE;
+  background: #DBEAFE;
 }
 
-/* Colored pill inside each option row */
 .mentor-tag-pill {
   display: inline-block;
   padding: 0.22rem 0.65rem;
@@ -183,11 +178,10 @@
   font-weight: 500;
 }
 
-/* Checkbox indicator on the right */
 .mentor-tag-checkbox {
   width: 18px;
   height: 18px;
-  border: 2px solid #E2E8F0;
+  border: 2px solid var(--border);
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -199,12 +193,12 @@
 }
 
 .mentor-tag-checkbox-checked {
-  background: #4F46E5;
-  border-color: #4F46E5;
+  background: var(--brand);
+  border-color: var(--brand);
   color: #fff;
 }
 
-/* ── Active tag pills shown below the controls ────────────────── */
+/* ── Active tag pills ────────────────────────────────────────── */
 
 .mentor-active-tags {
   display: flex;
@@ -247,7 +241,7 @@
 
 .mentor-active-tags-clear {
   font-size: 0.78rem;
-  color: #94A3B8;
+  color: var(--text-muted);
   background: none;
   border: none;
   cursor: pointer;
@@ -256,7 +250,7 @@
 }
 
 .mentor-active-tags-clear:hover {
-  color: #475569;
+  color: var(--text-sub);
   text-decoration: underline;
 }
 
@@ -266,18 +260,12 @@
   gap: 1rem;
 }
 
-.mentor-empty {
-  color: #94A3B8;
-  font-size: 0.95rem;
-  padding: 1rem 0;
-}
-
 /* ── Mentor Card ──────────────────────────────────────────────── */
 
 .mentor-card {
-  background: #fff;
-  border: 1px solid #E2E8F0;
-  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
@@ -286,7 +274,7 @@
 }
 
 .mentor-card:hover {
-  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.1);
+  box-shadow: var(--shadow-md);
   transform: translateY(-2px);
 }
 
@@ -296,17 +284,16 @@
   gap: 0.75rem;
 }
 
-/* Fills the space between the avatar and the badge */
 .mentor-card-info {
   flex: 1;
-  min-width: 0; /* prevents text overflow breaking the layout */
+  min-width: 0;
 }
 
 .mentor-card-avatar {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4F46E5, #7C3AED);
+  background: linear-gradient(135deg, var(--brand), var(--accent));
   color: #fff;
   font-weight: 700;
   font-size: 1rem;
@@ -326,12 +313,12 @@
 
 .mentor-card-name {
   font-weight: 600;
-  color: #0F172A;
+  color: var(--text);
   font-size: 0.95rem;
 }
 
 .mentor-card-headline {
-  color: #475569;
+  color: var(--text-sub);
   font-size: 0.85rem;
   margin: 0;
 }
@@ -343,15 +330,15 @@
 }
 
 .mentor-tag {
-  background: #EEF2FF;
-  color: #4F46E5;
+  background: var(--brand-light);
+  color: var(--brand);
   border-radius: 99px;
   padding: 0.2rem 0.55rem;
   font-size: 0.75rem;
 }
 
 .mentor-card-meta {
-  color: #94A3B8;
+  color: var(--text-muted);
   font-size: 0.8rem;
   margin: 0;
 }
@@ -359,27 +346,22 @@
 .mentor-card-btn {
   margin-top: auto;
   padding: 0.45rem 1rem;
-  background: #4F46E5;
+  background: var(--brand);
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   font-size: 0.85rem;
+  font-weight: 600;
   cursor: pointer;
   align-self: flex-start;
   transition: background 0.15s;
 }
 
 .mentor-card-btn:hover {
-  background: #4338CA;
+  background: var(--brand-hover);
 }
 
 /* ── Mentor Detail ────────────────────────────────────────────── */
-
-.mentor-detail-page {
-  min-height: 100vh;
-  background: #F8FAFC;
-  padding: 2rem 1rem;
-}
 
 .mentor-detail-inner {
   max-width: 680px;
@@ -392,23 +374,24 @@
 .mentor-detail-back {
   background: none;
   border: none;
-  color: #4F46E5;
+  color: var(--brand);
   font-size: 0.9rem;
   cursor: pointer;
   padding: 0;
   display: flex;
   align-items: center;
   gap: 0.3rem;
+  font-weight: 500;
 }
 
 .mentor-detail-back:hover {
-  color: #4338CA;
+  color: var(--brand-hover);
 }
 
 .mentor-detail-card {
-  background: #fff;
-  border: 1px solid #E2E8F0;
-  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
   padding: 2rem;
 }
 
@@ -423,7 +406,7 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4F46E5, #7C3AED);
+  background: linear-gradient(135deg, var(--brand), var(--accent));
   color: #fff;
   font-weight: 700;
   font-size: 1.4rem;
@@ -444,12 +427,12 @@
 .mentor-detail-name {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #0F172A;
+  color: var(--text);
   margin: 0 0 0.2rem;
 }
 
 .mentor-detail-headline {
-  color: #475569;
+  color: var(--text-sub);
   margin: 0;
 }
 
@@ -459,14 +442,14 @@
 
 .mentor-detail-label {
   font-size: 0.8rem;
-  color: #94A3B8;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 0.4rem;
 }
 
 .mentor-detail-value {
-  color: #0F172A;
+  color: var(--text);
   font-size: 0.95rem;
 }
 
@@ -478,11 +461,16 @@
 
 .mentor-detail-rate {
   font-weight: 700;
-  color: #4F46E5;
+  color: var(--brand);
   font-size: 1rem;
 }
 
 /* ── Match score badge ────────────────────────────────────────── */
+
+.mentor-score-wrapper {
+  position: relative;
+  cursor: help;
+}
 
 .mentor-score-badge {
   flex-shrink: 0;
@@ -490,38 +478,40 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0.3rem 0.5rem;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 700;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--r-sm);
+  font-size: 1rem;
+  font-weight: 800;
   line-height: 1.1;
-  min-width: 48px;
+  min-width: 60px;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .mentor-score-badge-label {
-  font-size: 0.62rem;
-  font-weight: 500;
+  font-size: 0.6rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  opacity: 0.85;
+  letter-spacing: 0.08em;
+  opacity: 0.8;
+  margin-top: 0.1rem;
 }
 
-/* Green — strong match (≥ 70%) */
 .mentor-score-badge-green {
   background: #DCFCE7;
-  color: #15803D;
+  color: #166534;
+  box-shadow: 0 0 0 1px #BBF7D0, 0 4px 12px rgba(22, 101, 52, 0.08);
 }
 
-/* Amber — partial match (40–69%) */
 .mentor-score-badge-amber {
   background: #FEF9C3;
-  color: #A16207;
+  color: #854D0E;
+  box-shadow: 0 0 0 1px #FDE68A, 0 4px 12px rgba(133, 77, 14, 0.08);
 }
 
-/* Red — low match (< 40%) */
 .mentor-score-badge-red {
   background: #FFE4E6;
-  color: #BE123C;
+  color: #9F1239;
+  box-shadow: 0 0 0 1px #FECACA, 0 4px 12px rgba(159, 18, 57, 0.08);
 }
 
 /* ── Profile-completion prompt ────────────────────────────────── */
@@ -531,17 +521,17 @@
   align-items: center;
   gap: 0.6rem;
   padding: 0.65rem 1rem;
-  background: #EEF2FF;
-  border: 1px solid #C7D2FE;
-  border-radius: 8px;
+  background: var(--brand-light);
+  border: 1px solid var(--brand-border);
+  border-radius: var(--r-sm);
   font-size: 0.875rem;
-  color: #4338CA;
+  color: var(--brand-dark);
   flex-wrap: wrap;
 }
 
 .mentor-match-prompt-icon {
   font-size: 0.9rem;
-  color: #4F46E5;
+  color: var(--brand);
 }
 
 .mentor-match-prompt-link {
@@ -550,10 +540,30 @@
   padding: 0;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #4F46E5;
+  color: var(--brand);
   cursor: pointer;
   font-family: inherit;
   margin-left: auto;
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .mentor-list-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .mentor-tag-trigger {
+    min-width: unset;
+  }
+
+  .mentor-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mentor-detail-card {
+    padding: 1.25rem;
+  }
 }

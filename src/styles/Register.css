@@ -7,7 +7,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--brand) 0%, #7C3AED 100%);
+  background: linear-gradient(135deg, var(--brand) 0%, var(--accent) 100%);
   padding: 2rem 1rem;
 }
 

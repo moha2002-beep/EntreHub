@@ -1,6 +1,9 @@
-import { useState } from "react";
+/**
+ * PostCard.jsx — Summary card for a single community post in the feed.
+ */
+
 import { useNavigate } from "react-router-dom";
-import { upvotePost, flagPost } from "../services/postService";
+import { upvotePost, reportPost } from "../services/postService";
 import { formatRelativeTime } from "../utils/formatTime";
 import "../styles/Community.css";
 
@@ -10,7 +13,6 @@ const ROLE_LABELS = {
   investor: "Investor",
 };
 
-// Maps each category name to its CSS colour modifier class
 const CATEGORY_CLASS = {
   "Ask a Mentor":     "community-cat-indigo",
   "Share a Win":      "community-cat-green",
@@ -20,22 +22,13 @@ const CATEGORY_CLASS = {
 };
 
 /**
- * PostCard — summary card for one community post.
- *
- * Props:
- *   post          {object}  Firestore post document (with .id)
- *   currentUserId {string}  uid of the logged-in user — used to
- *                           determine whether they have already upvoted
- *
- * Clicking anywhere on the card (except action buttons) navigates to
- * /community/:postId.  Action buttons use stopPropagation so the
- * card click handler doesn't also fire.
+ * PostCard — summary for community feed items.
  */
 function PostCard({ post, currentUserId }) {
   const navigate = useNavigate();
-  const [reported, setReported] = useState(false);
 
-  const hasVoted = (post.upvotedBy || []).includes(currentUserId);
+  const hasVoted    = (post.upvotedBy  || []).includes(currentUserId);
+  const hasReported = (post.reportedBy || []).includes(currentUserId);
 
   const handleUpvote = async (e) => {
     e.stopPropagation();
@@ -48,10 +41,9 @@ function PostCard({ post, currentUserId }) {
 
   const handleReport = async (e) => {
     e.stopPropagation();
-    if (reported) return;
+    if (hasReported) return;
     try {
-      await flagPost(post.id);
-      setReported(true);
+      await reportPost(post.id, currentUserId);
     } catch (err) {
       console.error("Report failed:", err);
     }
@@ -106,14 +98,15 @@ function PostCard({ post, currentUserId }) {
             💬 {post.replyCount || 0}
           </span>
 
-          {/* Report — toggles to "Reported" after flagging */}
+          {/* Report — disabled once the current user has already reported */}
           <button
             type="button"
             className="post-card-report"
             onClick={handleReport}
-            title="Report post"
+            disabled={hasReported}
+            title={hasReported ? "You have already reported this post" : "Report post"}
           >
-            {reported ? "Reported" : "⚑ Report"}
+            {hasReported ? "Reported" : "⚑ Report"}
           </button>
         </div>
       </div>

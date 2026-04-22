@@ -1,3 +1,7 @@
+/**
+ * authService.js — Firebase Authentication & profile creation.
+ */
+
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -5,11 +9,9 @@ import {
   onAuthStateChanged,
   updateProfile,
 } from "firebase/auth";
-
-
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { auth, db } from "./firebase";
-// Register a new user
+
 export const registerUser = async (email, password, displayName, role) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(
@@ -17,18 +19,21 @@ export const registerUser = async (email, password, displayName, role) => {
       email,
       password,
     );
+
     const user = userCredential.user;
-    // Update profile with display name
+
     await updateProfile(user, {
       displayName: displayName,
     });
-    // Create Firestore user profile document
+
+    // Match Firestore document ID to Firebase Auth UID
     await setDoc(doc(db, "users", user.uid), {
       displayName: displayName,
       email: email,
       role: role,
       createdAt: serverTimestamp(),
     });
+
     return {
       success: true,
       user: {
@@ -47,7 +52,6 @@ export const registerUser = async (email, password, displayName, role) => {
   }
 };
 
-// Login user
 export const loginUser = async (email, password) => {
   try {
     const userCredential = await signInWithEmailAndPassword(
@@ -74,7 +78,6 @@ export const loginUser = async (email, password) => {
   }
 };
 
-// Logout user
 export const logoutUser = async () => {
   try {
     await signOut(auth);
@@ -87,13 +90,13 @@ export const logoutUser = async () => {
   }
 };
 
-// Subscribe to auth state changes
 export const subscribeToAuthState = (callback) => {
-  const unsubscribe = onAuthStateChanged(auth, callback);
-  return unsubscribe;
+  return onAuthStateChanged(auth, callback);
 };
 
-// Get user-friendly error messages
+/**
+ * Maps technical Firebase error codes to user-friendly messages.
+ */
 export const getErrorMessage = (errorCode) => {
   const errorMessages = {
     "auth/email-already-in-use":
@@ -111,6 +114,8 @@ export const getErrorMessage = (errorCode) => {
       "Too many failed attempts. Please try again later.",
     "auth/network-request-failed":
       "Network error. Please check your connection and try again.",
+    "auth/invalid-credential":
+      "The email or password you entered is incorrect. Please try again.",
   };
 
   return errorMessages[errorCode] || "An error occurred. Please try again.";

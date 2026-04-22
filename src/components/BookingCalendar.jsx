@@ -1,21 +1,5 @@
 /**
- * BookingCalendar.jsx
- *
- * A three-step booking flow embedded on the MentorDetail page:
- *   Step 1 "calendar" — pick a date, then pick a 1-hour time slot
- *   Step 2 "confirm"  — review cost summary, add an optional message
- *   Step 3 "success"  — confirmation screen with option to book again
- *
- * Props:
- *   mentor {object}  — the full Firestore mentor profile document
- *                      (needs: id, displayName, availability,
- *                       availabilityHoursStart, availabilityHoursEnd, hourlyRate)
- *
- * Teaching concepts covered here:
- *   • Derived state  — dates and slots are computed, not stored
- *   • UI state machine — one `step` string drives what renders
- *   • useEffect dependency array — re-fetches slots when date changes
- *   • Async fetch inside useEffect (fire-and-forget pattern)
+ * BookingCalendar.jsx — 3-step booking flow for MentorDetail page.
  */
 
 import { useEffect, useState } from "react";
@@ -24,12 +8,8 @@ import { getUserProfile } from "../services/userService";
 import { createBooking, getAcceptedSlotsForMentor } from "../services/bookingService";
 import "../styles/Bookings.css";
 
-// ─── Constants ──────────────────────────────────────────────────────────────
+// Constants 
 
-/**
- * Maps the mentor's "availability" select value to JS day-of-week numbers.
- * Date.getDay() → 0=Sunday, 1=Monday, …, 6=Saturday
- */
 const AVAILABILITY_DAYS = {
   weekdays: [1, 2, 3, 4, 5],
   weekends: [0, 6],
@@ -40,17 +20,10 @@ const DAY_NAMES   = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun",
                      "Jul","Aug","Sep","Oct","Nov","Dec"];
 
-// ─── Pure helper functions ───────────────────────────────────────────────────
-// These are defined outside the component so they are not recreated on every
-// render — a small but illustrative optimisation to discuss with students.
+// helper functions 
 
 /**
  * Generates 1-hour time slot strings between startTime and endTime.
- * e.g. ("09:00", "17:00") → ["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00"]
- *
- * Teaching note: parseInt("09", 10) — always pass radix 10 to parseInt
- * to avoid issues with strings that start with "0" (interpreted as octal
- * in older JS engines).
  */
 function generateSlots(startTime = "09:00", endTime = "17:00") {
   const startH = parseInt(startTime.split(":")[0], 10);
@@ -64,8 +37,6 @@ function generateSlots(startTime = "09:00", endTime = "17:00") {
 
 /**
  * Returns an array of the next `count` Date objects starting from today.
- * setHours(0,0,0,0) zeroes out the time component so date comparisons
- * work correctly regardless of what time of day the user opens the page.
  */
 function getUpcomingDates(count = 28) {
   const today = new Date();
@@ -79,10 +50,7 @@ function getUpcomingDates(count = 28) {
 }
 
 /**
- * Formats a Date as "YYYY-MM-DD" using LOCAL time methods.
- * Using toISOString() would give a UTC string, which shifts the date
- * backward in UTC+ timezones (e.g. midnight UK time = 11 PM UTC the
- * night before), causing duplicate or wrong date keys.
+ * Formats a Date as "YYYY-MM-DD" using local time to avoid UTC shifts.
  */
 function toDateString(date) {
   const y = date.getFullYear();
@@ -91,10 +59,6 @@ function toDateString(date) {
   return `${y}-${m}-${d}`;
 }
 
-/**
- * Formats a 24-hour time string as a human-readable AM/PM string.
- * "09:00" → "9:00 AM"   "13:00" → "1:00 PM"   "00:00" → "12:00 AM"
- */
 function formatTime(timeStr) {
   const h      = parseInt(timeStr.split(":")[0], 10);
   const period = h < 12 ? "AM" : "PM";
@@ -102,64 +66,48 @@ function formatTime(timeStr) {
   return `${h12}:00 ${period}`;
 }
 
-/** Given "09:00" returns "10:00" — the end of the 1-hour slot. */
 function getEndSlot(startSlot) {
   const h = parseInt(startSlot.split(":")[0], 10) + 1;
   return `${String(h).padStart(2, "0")}:00`;
 }
 
-/** Formats a cost number or returns "Free" for zero / missing rates. */
 function formatCost(rate) {
   if (!rate || rate <= 0) return "Free";
   return `£${Number(rate).toLocaleString()}`;
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// Component  
 
 function BookingCalendar({ mentor }) {
   const { user } = useAuth();
 
-  // We need the current user's displayName to store in the booking document.
-  // Rather than passing it down through multiple props, we fetch it here.
   const [userProfile, setUserProfile] = useState(null);
-
-  // Which date the user has clicked in the date strip
   const [selectedDate, setSelectedDate] = useState(null);
 
-  // Time slots that are already ACCEPTED for the selected date.
-  // These will be shown as "Booked" and disabled.
+  // Accepted slots are disabled as "Booked" in the UI
   const [bookedSlots, setBookedSlots]     = useState([]);
   const [loadingSlots, setLoadingSlots]   = useState(false);
 
-  // Which 1-hour slot the user clicked
   const [selectedSlot, setSelectedSlot] = useState(null);
-
-  // Optional note from the entrepreneur to the mentor
   const [message, setMessage] = useState("");
 
-  // The three-step UI state machine
-  // "calendar" → "confirm" → "success"
   const [step, setStep]           = useState("calendar");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError]           = useState("");
 
-  // ── Fetch current user's profile once on mount ─────────────────────────
   useEffect(() => {
     if (!user) return;
     getUserProfile(user.uid).then(setUserProfile).catch(console.error);
   }, [user]);
 
-  // ── Fetch already-booked slots whenever the selected date changes ───────
-  // Teaching note: the dependency array [selectedDate, mentor.id] means
-  // "re-run this effect whenever selectedDate or mentor.id changes".
-  // React compares values with Object.is() — because Date objects are
-  // compared by reference, we store them as-is and compare via toDateString()
-  // when checking equality.
+  /**
+   * Refetch availability whenever the selected date changes.
+   */
   useEffect(() => {
     if (!selectedDate) return;
 
     setLoadingSlots(true);
-    setSelectedSlot(null); // clear any previously selected slot
+    setSelectedSlot(null);
 
     getAcceptedSlotsForMentor(mentor.id, toDateString(selectedDate))
       .then(setBookedSlots)
@@ -167,7 +115,7 @@ function BookingCalendar({ mentor }) {
       .finally(() => setLoadingSlots(false));
   }, [selectedDate, mentor.id]);
 
-  // ── Derived values (NOT state) ──────────────────────────────────────────
+  // Derived values 
   // These are re-computed on every render.  Since they depend only on the
   // mentor prop (which doesn't change while the page is open), this is
   // efficient and keeps the state surface minimal.
@@ -185,7 +133,7 @@ function BookingCalendar({ mentor }) {
     mentor.availabilityHoursEnd   || "17:00"
   );
 
-  // ── Event handlers ──────────────────────────────────────────────────────
+  //  Event handlers
 
   const handleDateSelect = (date) => {
     setSelectedDate(date);
@@ -235,7 +183,7 @@ function BookingCalendar({ mentor }) {
     setError("");
   };
 
-  // ── Render: success screen ───────────────────────────────────────────────
+  // Render: success screen 
 
   if (step === "success") {
     return (
@@ -265,7 +213,7 @@ function BookingCalendar({ mentor }) {
     );
   }
 
-  // ── Render: confirm screen ───────────────────────────────────────────────
+  // Render: confirm screen
 
   if (step === "confirm") {
     return (
@@ -337,12 +285,12 @@ function BookingCalendar({ mentor }) {
     );
   }
 
-  // ── Render: calendar screen (step === "calendar") ────────────────────────
+  //  Render: calendar screen (step === "calendar") 
 
   return (
     <div className="booking-calendar">
 
-      {/* ── Date strip ── */}
+      {/*  Date strip  */}
       <h3 className="booking-section-title">Select a date</h3>
 
       {availableDates.length === 0 ? (
@@ -371,7 +319,7 @@ function BookingCalendar({ mentor }) {
         </div>
       )}
 
-      {/* ── Time slot grid (only shown after a date is selected) ── */}
+      {/*  Time slot grid (only shown after a date is selected)  */}
       {selectedDate && (
         <>
           <h3 className="booking-section-title" style={{ marginTop: "1.5rem" }}>

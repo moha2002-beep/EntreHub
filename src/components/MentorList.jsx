@@ -1,3 +1,7 @@
+/**
+ * MentorList.jsx — Searchable, filterable mentor grid with AI match scoring.
+ */
+
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -6,7 +10,7 @@ import { calculateMatchScore, hasEnoughProfileData } from "../utils/matchScore";
 import MentorCard from "./MentorCard";
 import "../styles/Mentors.css";
 
-// ─── Tag colour palette ───────────────────────────────────────────────────────
+//  Tag colour palette
 const TAG_COLORS = [
   { bg: "#EEF2FF", text: "#4338CA" },
   { bg: "#F3E8FF", text: "#7C3AED" },
@@ -30,7 +34,7 @@ const parseTags = (val) => {
   return String(val).split(",").map((t) => t.trim()).filter(Boolean);
 };
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// Component 
 
 function MentorList() {
   const { user }   = useAuth();
@@ -47,12 +51,8 @@ function MentorList() {
 
   const dropdownRef = useRef(null);
 
-  // ── Fetch mentors + current user's profile in parallel ─────────────────
-  // Teaching note — Promise.all:
-  //   Both reads fire simultaneously.  The component waits for whichever
-  //   takes longer, not their sum.  With sequential awaits you would wait
-  //   for mentor-fetch THEN profile-fetch; with Promise.all you wait for
-  //   max(mentor-fetch, profile-fetch).
+  // Fetch mentors + current user's profile in parallel 
+  // Both reads fire simultaneously.
   useEffect(() => {
     const loadAll = async () => {
       try {
@@ -72,7 +72,7 @@ function MentorList() {
     loadAll();
   }, [user]);
 
-  // ── Close dropdown on outside click ────────────────────────────────────
+  //Close dropdown on outside click 
   useEffect(() => {
     const handleOutsideClick = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -83,35 +83,27 @@ function MentorList() {
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
-  // ── Score calculation (derived — not stored in state) ──────────────────
-  // Teaching note — derived vs stored state:
-  //   We do NOT put scores in useState.  Instead we recompute them on every
-  //   render from allMentors + entrepreneurProfile.  This keeps a single
-  //   source of truth: if either changes, the scores automatically update.
-  //   The trade-off is CPU; for large lists you would wrap this in useMemo.
+  // Score calculation 
   const isEntrepreneur = entrepreneurProfile?.role === "entrepreneur";
   const canScore       = isEntrepreneur && hasEnoughProfileData(entrepreneurProfile);
 
   const mentorsWithScores = allMentors.map((m) => ({
     ...m,
-    _score: canScore
-      ? calculateMatchScore(m, entrepreneurProfile).score
+    _match: canScore
+      ? calculateMatchScore(m, entrepreneurProfile)
       : null,
   }));
 
-  // ── Tag universe ────────────────────────────────────────────────────────
+  //  Tag universe
   const allTags = [
     ...new Set(
       allMentors.flatMap((m) => parseTags(m.expertiseTags)).filter(Boolean)
     ),
   ];
 
-  // ── Filter then sort ────────────────────────────────────────────────────
-  // Teaching note:
-  //   Filter runs first (reduces the set), then sort runs on the smaller
-  //   filtered array.  Sort is O(n log n) so filtering first is important.
-  //   Within the filtered set, mentors are always ordered by score descending
-  //   regardless of which search or tag filter is active.
+  //  Filter then sort 
+  //   Filter runs first (reduces the set), then sort runs on the smaller filtered array.  
+  //   Within the filtered set, mentors are always ordered by score descending regardless of which search or tag filter is active.
   const filteredAndSorted = mentorsWithScores
     .filter((mentor) => {
       const nameMatch = (mentor.displayName || "")
@@ -128,15 +120,17 @@ function MentorList() {
       return nameMatch && tagMatch;
     })
     .sort((a, b) => {
+      const scoreA = a._match?.score ?? null;
+      const scoreB = b._match?.score ?? null;
       // Both scored → descending by score
-      if (a._score !== null && b._score !== null) return b._score - a._score;
+      if (scoreA !== null && scoreB !== null) return scoreB - scoreA;
       // Scored before unscored
-      if (a._score !== null) return -1;
-      if (b._score !== null) return  1;
+      if (scoreA !== null) return -1;
+      if (scoreB !== null) return  1;
       return 0;
     });
 
-  // ── Tag dropdown helpers ────────────────────────────────────────────────
+  // Tag dropdown helpers 
   const toggleTag  = (tag) => {
     setActiveTags((prev) => {
       const next = new Set(prev);
@@ -151,14 +145,31 @@ function MentorList() {
     : activeTags.size === 1 ? [...activeTags][0]
     :                         `${activeTags.size} tags selected`;
 
-  // ── Render ──────────────────────────────────────────────────────────────
-  if (loading) return <p className="mentor-empty">Loading mentors…</p>;
-  if (error)   return <p className="mentor-empty">{error}</p>;
+  // Render 
+  if (loading) {
+    return (
+      <div className="mentor-list">
+        <div className="mentor-list-controls">
+          <div className="mentor-search skeleton" style={{ height: '40px', borderRadius: 'var(--r-sm)' }}></div>
+          <div className="mentor-tag-trigger skeleton" style={{ height: '40px', width: '200px', borderRadius: 'var(--r-sm)' }}></div>
+        </div>
+        <div className="mentor-grid">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="mentor-card skeleton" style={{ height: '220px', border: 'none' }}></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="alert alert-error">{error}</div>;
+  }
 
   return (
     <div className="mentor-list">
 
-      {/* ── Controls bar ── */}
+      {/*  Controls bar  */}
       <div className="mentor-list-controls">
         <input
           type="text"
@@ -231,7 +242,7 @@ function MentorList() {
         )}
       </div>
 
-      {/* ── Active tag pills ── */}
+      {/*  Active tag pills  */}
       {activeTags.size > 0 && (
         <div className="mentor-active-tags">
           {[...activeTags].map((tag) => {
@@ -261,8 +272,8 @@ function MentorList() {
         </div>
       )}
 
-      {/* ── "Complete profile" prompt (shown when user is entrepreneur but
-           profile lacks enough data to generate scores) ── */}
+      {/* "Complete profile" prompt (shown when user is entrepreneur but
+           profile lacks enough data to generate scores)  */}
       {isEntrepreneur && !canScore && (
         <div className="mentor-match-prompt">
           <span className="mentor-match-prompt-icon">✦</span>
@@ -277,17 +288,23 @@ function MentorList() {
         </div>
       )}
 
-      {/* ── Results ── */}
+      {/*  Results  */}
       {filteredAndSorted.length === 0 ? (
-        <p className="mentor-empty">
-          {allMentors.length === 0
-            ? "No mentors have joined yet."
-            : "No mentors match your search."}
-        </p>
+        <div className="empty-state">
+          <div className="empty-state-icon">🔍</div>
+          <h2 className="empty-state-heading">
+            {allMentors.length === 0 ? "No mentors yet" : "No results found"}
+          </h2>
+          <p className="empty-state-text">
+            {allMentors.length === 0
+              ? "No mentors have joined the platform yet. Check back soon!"
+              : "Try adjusting your search or clearing the tag filters."}
+          </p>
+        </div>
       ) : (
         <div className="mentor-grid">
           {filteredAndSorted.map((mentor) => (
-            <MentorCard key={mentor.id} mentor={mentor} score={mentor._score} />
+            <MentorCard key={mentor.id} mentor={mentor} matchResult={mentor._match} />
           ))}
         </div>
       )}

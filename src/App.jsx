@@ -1,13 +1,20 @@
+/**
+ * App.jsx — Root routing component. All routes are protected by auth state;
+ * unauthenticated users are redirected to /login.
+ */
+
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
+import Mentors from "./pages/Mentors";
 import MentorDetail from "./pages/MentorDetail";
 import Bookings from "./pages/Bookings";
 import Community from "./pages/Community";
 import PostDetail from "./pages/PostDetail";
+import Resources from "./pages/Resources";
 import "./App.css";
 
 function App() {
@@ -52,12 +59,20 @@ function App() {
       />
 
       <Route
+        path="/mentors"
+        element={user ? <Mentors /> : <Navigate to="/login" replace />}
+      />
+      <Route
         path="/mentor/:uid"
         element={user ? <MentorDetail /> : <Navigate to="/login" replace />}
       />
       <Route
         path="/bookings"
         element={user ? <Bookings /> : <Navigate to="/login" replace />}
+      />
+      <Route
+        path="/resources"
+        element={user ? <Resources /> : <Navigate to="/login" replace />}
       />
       <Route
         path="/community"

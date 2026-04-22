@@ -1,35 +1,51 @@
+/**
+ * Dashboard.jsx — Central user hub.
+ */
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getUserProfile } from "../services/userService";
-import { logoutUser } from "../services/authService";
 import { getCompleteness } from "../utils/profileCompletedness";
 import {
   listenToMentorBookings,
   listenToEntrepreneurBookings,
 } from "../services/bookingService";
-import MentorList from "../components/MentorList";
+import Navbar from "../components/Navbar";
 import "../styles/Dashboard.css";
+import { runDatabaseSeed } from "../utils/seedDatabase";
 
 function Dashboard() {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [error, setError] = useState(null);
-  const [activeSection, setActiveSection] = useState("overview");
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!user) return;
 
+    let retryCount = 0;
+
     const loadProfile = async () => {
       try {
         const data = await getUserProfile(user.uid);
-        setProfile(data);
+
+        if (data) {
+          setProfile(data);
+          setLoadingProfile(false);
+        } else if (retryCount < 2) {
+          // If profile isn't found immediately, wait 800ms and retry
+          retryCount++;
+          setTimeout(loadProfile, 800);
+        } else {
+          // If still missing after retries, stop loading to show the Welcome screen
+          setProfile(null);
+          setLoadingProfile(false);
+        }
       } catch (err) {
         console.error("Failed to load profile", err);
         setError("Could not load your profile.");
-      } finally {
         setLoadingProfile(false);
       }
     };
@@ -37,13 +53,11 @@ function Dashboard() {
     loadProfile();
   }, [user]);
 
-  // ── Real-time pending-booking count for the nav badge ─────────────────
-  // This demonstrates that onSnapshot isn't limited to dedicated pages —
-  // you can open a lightweight listener anywhere you need live data.
-  // The cleanup (return () => unsub?.()) runs when Dashboard unmounts,
-  // preventing a dangling listener after the user logs out.
   const [pendingCount, setPendingCount] = useState(0);
 
+  /**
+   * Subscribes to real-time booking updates for notification badges.
+   */
   useEffect(() => {
     if (!profile) return;
 
@@ -52,39 +66,111 @@ function Dashboard() {
     const countPending = (bookings) => {
       setPendingCount(bookings.filter((b) => b.status === "pending").length);
     };
+    // Show the skeleton loader while waiting/retrying for the profile to load
+    if (loadingProfile) {
+      return (
+        <div className="page-shell">
+          <Navbar />
+          <div className="page-body page-entry">
+            <div className="page-inner">
+              <div className="spinner"></div>
+              <p style={{ textAlign: "center", marginTop: "1rem" }}>
+                Preparing your workspace...
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     if (profile.role === "mentor") {
       unsub = listenToMentorBookings(user.uid, countPending, console.error);
     } else if (profile.role === "entrepreneur") {
-      unsub = listenToEntrepreneurBookings(user.uid, countPending, console.error);
+      unsub = listenToEntrepreneurBookings(
+        user.uid,
+        countPending,
+        console.error,
+      );
     }
 
     return () => unsub?.();
   }, [profile, user]);
 
-  const handleLogout = async () => {
-    const result = await logoutUser();
-    if (result.success) {
-      navigate("/login", { replace: true });
-    } else {
-      console.error("Logout failed:", result.error);
-    }
-  };
+  if (!user) return null;
 
-  if (!user) return <p>You are not signed in.</p>;
-  if (loadingProfile) return <p>Loading dashboard...</p>;
-  if (error) return <p>{error}</p>;
-  if (!profile) return <p>No profile found for this user.</p>;
+  // Shimmering skeleton loader for premium UX
+  if (loadingProfile) {
+    return (
+      <div className="page-shell">
+        <Navbar />
+        <div className="page-body">
+          <div className="page-inner">
+            <div
+              className="dashboard-hero-card skeleton"
+              style={{
+                height: "160px",
+                border: "none",
+                marginBottom: "1.5rem",
+              }}
+            ></div>
+            <div className="dashboard-grid">
+              <div
+                className="dashboard-card skeleton"
+                style={{ height: "240px" }}
+              ></div>
+              <div
+                className="dashboard-card skeleton"
+                style={{ height: "240px" }}
+              ></div>
+            </div>
+            <div className="dashboard-grid-3" style={{ marginTop: "1.5rem" }}>
+              <div
+                className="dashboard-card skeleton"
+                style={{ height: "180px" }}
+              ></div>
+              <div
+                className="dashboard-card skeleton"
+                style={{ height: "180px" }}
+              ></div>
+              <div
+                className="dashboard-card skeleton"
+                style={{ height: "180px" }}
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="page-shell">
+        <Navbar />
+        <div className="page-body">
+          <div className="page-inner">
+            <div className="alert alert-error">{error}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="page-shell">
+        <Navbar />
+        <div className="page-body">
+          <div className="page-inner">
+            <p>No profile found for this user.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const displayName = profile.displayName || user.displayName || "User";
   const role = profile.role || "user";
-
-  const initials = displayName
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
 
   const roleLabelMap = {
     entrepreneur: "Entrepreneur",
@@ -93,320 +179,183 @@ function Dashboard() {
   };
 
   const roleLabel = roleLabelMap[role] || "Member";
+
+  // Calculate completeness based on required profile fields
   const completeness = getCompleteness(profile);
 
   return (
-    <div className="dashboard-page">
-      <header className="dashboard-header">
-        <div className="dashboard-logo">EntreHub</div>
+    <div className="page-shell">
+      <Navbar />
 
-        <nav className="dashboard-nav">
-          <button
-            type="button"
-            className={
-              "dashboard-nav-link" +
-              (activeSection === "overview" ? " dashboard-nav-link-active" : "")
-            }
-            onClick={() => setActiveSection("overview")}
+      <div className="page-body page-entry">
+        <div className="page-inner">
+          {/*  TEMPORARY DEV BUTTON: DELETE AFTER SEEDING  */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginBottom: "1rem",
+            }}
           >
-            Overview
-          </button>
-          <button
-            type="button"
-            className="dashboard-nav-link"
-            onClick={() => navigate("/profile")}
-          >
-            Profile
-          </button>
-          <button
-            type="button"
-            className={
-              "dashboard-nav-link" +
-              (activeSection === "mentors" ? " dashboard-nav-link-active" : "")
-            }
-            onClick={() => setActiveSection("mentors")}
-          >
-            Mentors
-          </button>
-          {(profile?.role === "mentor" || profile?.role === "entrepreneur") && (
             <button
-              type="button"
-              className={
-                "dashboard-nav-link" +
-                (activeSection === "bookings" ? " dashboard-nav-link-active" : "")
-              }
-              onClick={() => setActiveSection("bookings")}
+              onClick={() => runDatabaseSeed()}
+              className="btn btn-secondary"
             >
-              Bookings
-              {pendingCount > 0 && (
-                <span className="dashboard-nav-badge">{pendingCount}</span>
-              )}
+              🌱 Seed Test Data
             </button>
-          )}
-          <button
-            type="button"
-            className={
-              "dashboard-nav-link" +
-              (activeSection === "resources"
-                ? " dashboard-nav-link-active"
-                : "")
-            }
-            onClick={() => setActiveSection("resources")}
-          >
-            Resources
-          </button>
-          <button
-            type="button"
-            className={
-              "dashboard-nav-link" +
-              (activeSection === "community"
-                ? " dashboard-nav-link-active"
-                : "")
-            }
-            onClick={() => setActiveSection("community")}
-          >
-            Community
-          </button>
-        </nav>
-
-        <div className="dashboard-user">
-          <div className="dashboard-avatar">
-            {profile.photoURL ? (
-              <img
-                src={profile.photoURL}
-                alt={`${displayName}'s avatar`}
-                className="dashboard-avatar-img"
-              />
-            ) : (
-              initials
-            )}
           </div>
-          <div>
-            <div>{displayName}</div>
-            <div style={{ fontSize: "0.8rem", color: "#9ca3af" }}>
-              {roleLabel}
-            </div>
-          </div>
-          <button
-            type="button"
-            className="dashboard-logout-btn"
-            onClick={handleLogout}
-          >
-            Log out
-          </button>
-        </div>
-      </header>
 
-      <main className="dashboard-main">
-        <div className="dashboard-content">
+          {/* Hero banner with premium avatar styling */}
           <section className="dashboard-hero-card">
-            <div className="dashboard-hero-title">
-              Welcome back, {displayName}
+            <div className="dashboard-hero-content">
+              {profile.photoURL ? (
+                <img
+                  className="dashboard-hero-avatar"
+                  src={profile.photoURL}
+                  alt={displayName}
+                />
+              ) : (
+                <div className="dashboard-hero-avatar dashboard-hero-avatar-placeholder">
+                  {displayName[0].toUpperCase()}
+                </div>
+              )}
+              <div className="dashboard-hero-text">
+                <div className="dashboard-hero-title">
+                  Welcome back, {displayName}
+                </div>
+                <p className="dashboard-hero-subtitle">
+                  You are signed in as{" "}
+                  <span className="dashboard-pill">{roleLabel}</span>.
+                </p>
+              </div>
             </div>
-            <p className="dashboard-hero-subtitle">
-              You are signed in as{" "}
-              <span className="dashboard-pill">{roleLabel}</span>.
-            </p>
           </section>
 
-          {activeSection === "overview" && (
-            <section className="dashboard-grid">
-              <div className="dashboard-card">
-                <h2 className="dashboard-card-title">Getting started</h2>
-                <div className="dashboard-card-body">
-                  <p>
-                    Use the navigation above to access your profile, mentors,
-                    resources, and the community feed.
-                  </p>
-
-                  <div style={{ marginTop: "0.9rem" }}>
-                    <strong>
-                      Profile completeness: {completeness.percent}%
-                    </strong>
-                    <div className="dashboard-progress" aria-hidden="true">
-                      <div
-                        className="dashboard-progress-bar"
-                        style={{ width: `${completeness.percent}%` }}
-                      />
-                    </div>
-
-                    {completeness.missing.length > 0 && (
-                      <ul className="dashboard-meta-list">
-                        {completeness.missing.map((item) => (
-                          <li key={item}>{item}</li>
-                        ))}
-                      </ul>
-                    )}
-
-                    <div className="dashboard-action-row">
-                      <button
-                        type="button"
-                        className="dashboard-action-btn"
-                        onClick={() => navigate("/profile?mode=edit")}
-                      >
-                        Complete profile
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="dashboard-card">
-                <h2 className="dashboard-card-title">Your role</h2>
-                <div className="dashboard-card-body">
-                  <p style={{ marginBottom: "0.4rem" }}>
-                    You&apos;re currently set up as <strong>{roleLabel}</strong>
-                    .
-                  </p>
-                  <div className="dashboard-chip-row">
-                    {role === "entrepreneur" && (
-                      <>
-                        <span className="dashboard-chip">Idea validation</span>
-                        <span className="dashboard-chip">Pitch practice</span>
-                        <span className="dashboard-chip">Funding prep</span>
-                      </>
-                    )}
-                    {role === "investor" && (
-                      <>
-                        <span className="dashboard-chip">
-                          Deal flow overview
-                        </span>
-                        <span className="dashboard-chip">Founder access</span>
-                      </>
-                    )}
-                    {role === "mentor" && (
-                      <>
-                        <span className="dashboard-chip">
-                          Matchmaking preview
-                        </span>
-                        <span className="dashboard-chip">Session planning</span>
-                      </>
-                    )}
-                    {role !== "entrepreneur" &&
-                      role !== "investor" &&
-                      role !== "mentor" && (
-                        <span className="dashboard-chip">Member</span>
-                      )}
-                  </div>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {activeSection === "profile" && (
-            <section className="dashboard-card">
+          {/* Quick-action cards */}
+          <div className="dashboard-grid">
+            {/* Profile completeness card */}
+            <div className="dashboard-card">
               <h2 className="dashboard-card-title">Profile</h2>
               <div className="dashboard-card-body">
-                <p>
-                  Name: <strong>{displayName}</strong>
-                </p>
-                <p>
-                  Email: <strong>{profile.email || user.email}</strong>
-                </p>
-                <p>
-                  Role: <strong>{roleLabel}</strong>
-                </p>
+                <strong>Completeness: {completeness.percent}%</strong>
+                <div className="dashboard-progress" aria-hidden="true">
+                  <div
+                    className="dashboard-progress-bar"
+                    style={{ width: `${completeness.percent}%` }}
+                  />
+                </div>
+
+                {completeness.missing.length > 0 && (
+                  <ul className="dashboard-meta-list">
+                    {completeness.missing.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                )}
 
                 <div className="dashboard-action-row">
                   <button
                     type="button"
-                    className="dashboard-action-btn"
-                    onClick={() => navigate("/profile")}
-                  >
-                    View profile
-                  </button>
-                  <button
-                    type="button"
-                    className="dashboard-action-btn"
+                    className="btn btn-primary btn-sm"
                     onClick={() => navigate("/profile?mode=edit")}
                   >
-                    Edit profile
+                    Complete profile
                   </button>
                 </div>
               </div>
-            </section>
-          )}
+            </div>
 
-          {activeSection === "mentors" && (
-            <section className="dashboard-card">
+            {/* Your role - dynamic suggestions based on user type */}
+            <div className="dashboard-card">
+              <h2 className="dashboard-card-title">Your role</h2>
+              <div className="dashboard-card-body">
+                <p style={{ marginBottom: "0.4rem" }}>
+                  You&apos;re currently set up as <strong>{roleLabel}</strong>.
+                </p>
+                <div className="dashboard-chip-row">
+                  {role === "entrepreneur" && (
+                    <>
+                      <span className="dashboard-chip">Idea validation</span>
+                      <span className="dashboard-chip">Pitch practice</span>
+                      <span className="dashboard-chip">Funding prep</span>
+                    </>
+                  )}
+                  {role === "investor" && (
+                    <>
+                      <span className="dashboard-chip">Deal flow overview</span>
+                      <span className="dashboard-chip">Founder access</span>
+                    </>
+                  )}
+                  {role === "mentor" && (
+                    <>
+                      <span className="dashboard-chip">
+                        Matchmaking preview
+                      </span>
+                      <span className="dashboard-chip">Session planning</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Navigation Grid */}
+          <div className="dashboard-grid dashboard-grid-3">
+            <div
+              className="dashboard-card dashboard-card-link"
+              onClick={() => navigate("/mentors")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === "Enter" && navigate("/mentors")}
+            >
               <h2 className="dashboard-card-title">Mentors</h2>
               <div className="dashboard-card-body">
-                <MentorList />
+                <p>Discover mentors matched to your profile and goals.</p>
               </div>
-            </section>
-          )}
+              <span className="dashboard-card-arrow">→</span>
+            </div>
 
-          {activeSection === "bookings" && (
-            <section className="dashboard-card">
+            <div
+              className="dashboard-card dashboard-card-link"
+              onClick={() => navigate("/bookings")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === "Enter" && navigate("/bookings")}
+            >
               <h2 className="dashboard-card-title">
                 Bookings
                 {pendingCount > 0 && (
-                  <span className="dashboard-nav-badge" style={{ marginLeft: "0.5rem" }}>
-                    {pendingCount} pending
-                  </span>
+                  <span className="dashboard-nav-badge">{pendingCount}</span>
                 )}
               </h2>
               <div className="dashboard-card-body">
-                {profile?.role === "mentor" && (
-                  <p>
-                    You have{" "}
-                    <strong>{pendingCount}</strong>{" "}
-                    pending booking {pendingCount === 1 ? "request" : "requests"}.
-                    Open the Bookings page to accept or decline them.
-                  </p>
-                )}
-                {profile?.role === "entrepreneur" && (
-                  <p>
-                    Track your mentoring session requests and their status.
-                  </p>
-                )}
-                <div className="dashboard-action-row">
-                  <button
-                    type="button"
-                    className="dashboard-action-btn"
-                    onClick={() => navigate("/bookings")}
-                  >
-                    Go to Bookings
-                  </button>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {activeSection === "resources" && (
-            <section className="dashboard-card">
-              <h2 className="dashboard-card-title">Resources</h2>
-              <div className="dashboard-card-body">
                 <p>
-                  Learning paths, templates, and recommended resources will be
-                  surfaced here based on your role.
+                  {pendingCount > 0
+                    ? `You have ${pendingCount} pending ${pendingCount === 1 ? "request" : "requests"}.`
+                    : "View and manage your mentoring sessions."}
                 </p>
               </div>
-            </section>
-          )}
+              <span className="dashboard-card-arrow">→</span>
+            </div>
 
-          {activeSection === "community" && (
-            <section className="dashboard-card">
-              <h2 className="dashboard-card-title">Community feed</h2>
+            <div
+              className="dashboard-card dashboard-card-link"
+              onClick={() => navigate("/community")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === "Enter" && navigate("/community")}
+            >
+              <h2 className="dashboard-card-title">Community</h2>
               <div className="dashboard-card-body">
                 <p>
-                  Ask questions, share wins, and connect with entrepreneurs,
-                  mentors, and investors across the EntreHub community.
+                  Ask questions, share wins, and connect with the community.
                 </p>
-                <div className="dashboard-action-row">
-                  <button
-                    type="button"
-                    className="dashboard-action-btn"
-                    onClick={() => navigate("/community")}
-                  >
-                    Go to Community Feed
-                  </button>
-                </div>
               </div>
-            </section>
-          )}
+              <span className="dashboard-card-arrow">→</span>
+            </div>
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

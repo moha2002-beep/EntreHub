@@ -1,7 +1,5 @@
 /* =====================================================
    Community.css
-   Styles for: Community page, PostDetail page,
-   PostCard, CreatePost, and ReplyThread components.
    ===================================================== */
 
 /* ── Page shell ──────────────────────────────────────── */
@@ -698,4 +696,112 @@
 @media (max-width: 768px) {
   .community-page  { padding: 1rem 0.75rem; }
   .community-inner { gap: 1rem; }
+}
+
+/* ── Phase 6: Account status banners ─────────────────────────────────────── */
+
+.account-status-banner {
+  border-radius: var(--r-md);
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.account-status-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.account-status-reason,
+.account-status-contact {
+  font-size: 0.85rem;
+  margin: 0;
+  opacity: 0.9;
+}
+
+/* Banned — red */
+.account-status-banned {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #991B1B;
+}
+
+/* Suspended — amber */
+.account-status-suspended {
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  color: #92400E;
+}
+
+/* Warned — yellow */
+.account-status-warned {
+  background: #FEFCE8;
+  border: 1px solid #FEF08A;
+  color: #713F12;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.account-status-warned .account-status-title {
+  flex: 1;
+}
+
+.account-status-dismiss {
+  background: none;
+  border: 1px solid currentColor;
+  color: inherit;
+  border-radius: var(--r-sm);
+  padding: 0.2rem 0.6rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Phase 6: Moderation warning ─────────────────────────────────────────── */
+
+.moderation-warning {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-radius: var(--r-md);
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.moderation-warning p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #991B1B;
+  flex: 1;
+}
+
+.moderation-warning-dismiss {
+  background: none;
+  border: none;
+  color: #991B1B;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Compact version used inside InlineReplyForm */
+.moderation-warning-compact {
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.moderation-warning-compact p {
+  font-size: 0.8rem;
 }

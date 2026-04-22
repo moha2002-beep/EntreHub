@@ -1,3 +1,7 @@
+/**
+ * RegisterForm.jsx — Sign-up form with password validation.
+ */
+
 import { useState } from "react";
 import { registerUser, getErrorMessage } from "../services/authService";
 import "../styles/RegisterForm.css";
@@ -16,18 +20,18 @@ function RegisterForm({ onSuccess, onSwitchToLogin }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Validation rules
+  /**
+   * Client-side validation for account security.
+   */
   const validateForm = () => {
     const newErrors = {};
 
-    // Full Name validation
     if (!formData.fullName.trim()) {
       newErrors.fullName = "Full name is required";
     } else if (formData.fullName.trim().length < 3) {
       newErrors.fullName = "Full name must be at least 3 characters";
     }
 
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email.trim()) {
       newErrors.email = "Email is required";
@@ -35,7 +39,6 @@ function RegisterForm({ onSuccess, onSwitchToLogin }) {
       newErrors.email = "Please enter a valid email address";
     }
 
-    // Password validation
     if (!formData.password) {
       newErrors.password = "Password is required";
     } else if (formData.password.length < 8) {
@@ -53,7 +56,6 @@ function RegisterForm({ onSuccess, onSwitchToLogin }) {
         "Password must contain at least one special character (@$!%*?&)";
     }
 
-    // Confirm password validation
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password";
     } else if (formData.password !== formData.confirmPassword) {
@@ -70,7 +72,6 @@ function RegisterForm({ onSuccess, onSwitchToLogin }) {
       ...prev,
       [name]: value,
     }));
-    // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -97,7 +98,6 @@ function RegisterForm({ onSuccess, onSwitchToLogin }) {
       );
 
       if (result.success) {
-        // Clear form
         setFormData({
           fullName: "",
           email: "",
@@ -106,7 +106,6 @@ function RegisterForm({ onSuccess, onSwitchToLogin }) {
           role: "entrepreneur",
         });
 
-        // Call success callback
         if (onSuccess) {
           onSuccess(result.user);
         }
@@ -160,24 +159,30 @@ function RegisterForm({ onSuccess, onSwitchToLogin }) {
         {errors.email && <span className="error-message">{errors.email}</span>}
       </div>
 
-      {/* Role Selection */}
+      {/* Role Selection — interactive cards for better visual feedback */}
       <div className="form-group">
-        <label htmlFor="role">Account Type *</label>
-        <select
-          id="role"
-          name="role"
-          value={formData.role}
-          onChange={handleInputChange}
-          disabled={isLoading}
-          className="role-select"
-        >
-          <option value="entrepreneur">Entrepreneur</option>
-          <option value="investor">Investor</option>
-          <option value="mentor">Mentor</option>
-        </select>
+        <label>I am a... *</label>
+        <div className="role-card-row">
+          {[
+            { value: "entrepreneur", label: "Entrepreneur", desc: "I'm building a venture" },
+            { value: "mentor",       label: "Mentor",       desc: "I guide founders" },
+            { value: "investor",     label: "Investor",     desc: "I fund startups" },
+          ].map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              disabled={isLoading}
+              className={`role-card${formData.role === opt.value ? " role-card-active" : ""}`}
+              onClick={() => handleInputChange({ target: { name: "role", value: opt.value } })}
+            >
+              <span className="role-card-label">{opt.label}</span>
+              <span className="role-card-desc">{opt.desc}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Password */}
+      {/* Password with real-time requirement indicator */}
       <div className="form-group">
         <label htmlFor="password">Password *</label>
         <div className="password-input-wrapper">
@@ -257,7 +262,6 @@ function RegisterForm({ onSuccess, onSwitchToLogin }) {
         )}
       </div>
 
-      {/* Submit Error */}
       {errors.submit && (
         <div className="alert alert-error">
           <span className="alert-icon">⚠️</span>
@@ -265,12 +269,10 @@ function RegisterForm({ onSuccess, onSwitchToLogin }) {
         </div>
       )}
 
-      {/* Submit Button */}
       <button type="submit" className="btn btn-primary" disabled={isLoading}>
         {isLoading ? "Creating Account..." : "Create Account"}
       </button>
 
-      {/* Additional Info */}
       <p className="form-footer">
         Already have an account?{" "}
         <button

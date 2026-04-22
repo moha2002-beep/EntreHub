@@ -1,17 +1,17 @@
+/**
+ * MentorCard.jsx — Summary card for one mentor, with an optional AI match score badge.
+ */
+
 import { useNavigate } from "react-router-dom";
 import "../styles/Mentors.css";
 
 /**
  * MentorCard — displays a summary of one mentor.
- *
- * Props:
- *   mentor  {object}        A Firestore user document with role === "mentor".
- *   score   {number|null}   0–100 match score, or null when no score is
- *                           available (non-entrepreneur viewer / incomplete
- *                           entrepreneur profile).
  */
-function MentorCard({ mentor, score }) {
+function MentorCard({ mentor, matchResult }) {
   const navigate = useNavigate();
+  const score = matchResult?.score ?? null;
+  const breakdown = matchResult?.breakdown ?? {};
 
   const initials = (mentor.displayName || "?")
     .split(" ")
@@ -31,14 +31,6 @@ function MentorCard({ mentor, score }) {
   if (mentor.yearsOfExperience) metaParts.push(`${mentor.yearsOfExperience} yrs exp`);
   if (mentor.availability)      metaParts.push(mentor.availability);
 
-  // ── Match badge ──────────────────────────────────────────────────────────
-  // score === null  → user is not an entrepreneur, or profile is incomplete
-  // score === 0–100 → show badge with colour based on score tier
-  //
-  // Colour tiers (defined in brief):
-  //   ≥ 70  green  — strong match
-  //   ≥ 40  amber  — partial match
-  //   < 40  red    — low match
   const showBadge  = score !== null && score !== undefined;
   const badgeClass = !showBadge      ? ""
     : score >= 70                    ? "mentor-score-badge-green"

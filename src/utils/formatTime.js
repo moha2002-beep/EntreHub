@@ -1,21 +1,5 @@
 /**
- * formatRelativeTime
- *
- * Converts a Firestore Timestamp (or any Date-like object) to a
- * human-friendly relative string.
- *
- * Examples:
- *   < 60 seconds  → "just now"
- *   < 60 minutes  → "3m ago"
- *   < 24 hours    → "2h ago"
- *   < 7 days      → "5d ago"
- *   older         → locale date string (e.g. "12/04/2025")
- *
- * Firestore Timestamps have a .toDate() method that returns a JS Date.
- * We check for that first before falling back to new Date(timestamp).
- *
- * @param {import("firebase/firestore").Timestamp | Date | null} timestamp
- * @returns {string}
+ * Converts a Firestore Timestamp to a human-friendly relative string.
  */
 export function formatRelativeTime(timestamp) {
   if (!timestamp) return "";

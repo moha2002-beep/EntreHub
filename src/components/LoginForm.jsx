@@ -1,3 +1,7 @@
+/**
+ * LoginForm.jsx — User authentication form.
+ */
+
 import { useState } from "react";
 import { loginUser, getErrorMessage } from "../services/authService";
 import "../styles/RegisterForm.css";

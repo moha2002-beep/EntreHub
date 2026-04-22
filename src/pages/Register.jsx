@@ -1,3 +1,7 @@
+/**
+ * Register.jsx — Sign-up page.
+ */
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import RegisterForm from "../components/RegisterForm";
@@ -13,7 +17,6 @@ function Register() {
     setRegisterSuccess(true);
 
     setTimeout(() => {
-      console.log("Redirecting to dashboard with user:", user);
       navigate("/dashboard");
     }, 1200);
   };
@@ -35,6 +38,7 @@ function Register() {
         ) : (
           <div className="register-content">
             <div className="register-header">
+              <div className="auth-logo">Entre<span className="auth-logo-accent">Hub</span></div>
               <h1>Create your account</h1>
               <p>Join EntreHub and start your journey.</p>
             </div>

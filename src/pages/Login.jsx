@@ -1,3 +1,7 @@
+/**
+ * Login.jsx — Sign-in page.
+ */
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LoginForm from "../components/LoginForm";
@@ -8,12 +12,14 @@ function Login() {
   const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
 
+  /**
+   * Stores user data for welcome message, then redirects.
+   */
   const handleLoginSuccess = (user) => {
     setCurrentUser(user);
     setLoginSuccess(true);
 
     setTimeout(() => {
-      console.log("Redirecting to dashboard with user:", user);
       navigate("/dashboard");
     }, 1200);
   };
@@ -35,6 +41,7 @@ function Login() {
         ) : (
           <div className="register-content">
             <div className="register-header">
+              <div className="auth-logo">Entre<span className="auth-logo-accent">Hub</span></div>
               <h1>Welcome Back</h1>
               <p>Sign in to continue to EntreHub</p>
             </div>

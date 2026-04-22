@@ -1,5 +1,10 @@
-import { useState } from "react";
+/**
+ * CreatePost.jsx — Post composition with moderation gates.
+ */
+
+import { useEffect, useState } from "react";
 import { createPost } from "../services/postService";
+import { checkAccountStatus } from "../services/userService";
 import { moderateContent } from "../utils/moderation";
 import "../styles/Community.css";
 
@@ -11,48 +16,56 @@ const CATEGORIES = [
   "General",
 ];
 
-/**
- * CreatePost — inline form for composing a new community post.
- *
- * Always visible at the top of the Community feed (not hidden behind
- * a button) so users are immediately invited to contribute.
- *
- * Props:
- *   authorId   {string}  uid of the logged-in user
- *   authorName {string}  display name shown on the post
- *   authorRole {string}  'mentor' | 'entrepreneur' | 'investor'
- *
- * Validation:
- *   All three fields (title, body, category) are required.
- *   Content is run through moderateContent() before submission —
- *   currently a Phase 6 placeholder that always returns { safe: true }.
- *
- * The form clears after a successful submission and the real-time
- * listener in Community.jsx will surface the new post automatically.
- */
 function CreatePost({ authorId, authorName, authorRole }) {
-  const [title, setTitle]         = useState("");
-  const [body, setBody]           = useState("");
-  const [category, setCategory]   = useState("");
-  const [error, setError]         = useState(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [title, setTitle]               = useState("");
+  const [body, setBody]                 = useState("");
+  const [category, setCategory]         = useState("");
+  const [error, setError]               = useState(null);
+  const [submitting, setSubmitting]     = useState(false);
 
+  const [accountStatus, setAccountStatus] = useState(null);
+  const [warnDismissed, setWarnDismissed] = useState(false);
+  const [moderationError, setModerationError] = useState(null);
+
+  useEffect(() => {
+    if (!authorId) return;
+    checkAccountStatus(authorId)
+      .then(setAccountStatus)
+      .catch((err) => {
+        console.error("Account status check failed:", err);
+        setAccountStatus({ status: "active" });
+      });
+  }, [authorId]);
+
+  const handleTitleChange = (e) => {
+    setTitle(e.target.value);
+    if (moderationError) setModerationError(null);
+  };
+  const handleBodyChange = (e) => {
+    setBody(e.target.value);
+    if (moderationError) setModerationError(null);
+  };
+
+  /**
+   * Runs client-side validation and moderation before submit.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setModerationError(null);
 
-    // Client-side validation — all fields required
     if (!title.trim() || !body.trim() || !category) {
       setError("Please fill in all fields before posting.");
       return;
     }
 
-    // Moderation check (Phase 6 placeholder — always passes)
     const titleCheck = moderateContent(title);
     const bodyCheck  = moderateContent(body);
-    if (!titleCheck.safe || !bodyCheck.safe) {
-      setError(
-        "Your post contains content that cannot be submitted. Please review and try again."
+    const allFlagged = [...new Set([...titleCheck.flaggedWords, ...bodyCheck.flaggedWords])];
+
+    if (allFlagged.length > 0) {
+      setModerationError(
+        `Your post contains restricted content: "${allFlagged.join('", "')}". Please edit before submitting.`
       );
       return;
     }
@@ -67,23 +80,102 @@ function CreatePost({ authorId, authorName, authorRole }) {
         authorName,
         authorRole,
       });
-      // Clear form on success
       setTitle("");
       setBody("");
       setCategory("");
     } catch (err) {
       console.error("Failed to create post:", err);
-      setError("Something went wrong. Please try again.");
+      if (err.code === "CONTENT_VIOLATION") {
+        setModerationError(
+          "Your content violates our Safety Guidelines and was not submitted. Repeated violations may affect your account."
+        );
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
     } finally {
       setSubmitting(false);
     }
   };
 
+  // Layer 1: Account status gates 
+  // Still loading — render nothing yet (avoids flash of the form before
+  // we know whether the user is banned/suspended).
+  if (!accountStatus) return null;
+
+  // Banned — replace the form entirely with a permanent message
+  if (accountStatus.status === "banned") {
+    return (
+      <div className="account-status-banner account-status-banned">
+        <p className="account-status-title">Your account has been permanently banned from EntreHub.</p>
+        {accountStatus.reason && (
+          <p className="account-status-reason">Reason: {accountStatus.reason}</p>
+        )}
+        <p className="account-status-contact">
+          Please contact support if you believe this is an error.
+        </p>
+      </div>
+    );
+  }
+
+  // Suspended — show the form in a disabled state with a clear message
+  const isSuspended = accountStatus.status === "suspended";
+
   return (
     <form className="create-post" onSubmit={handleSubmit} noValidate>
       <h2 className="create-post-heading">Start a conversation</h2>
 
+      {/* Suspension banner — replaces normal form access */}
+      {isSuspended && (
+        <div className="account-status-banner account-status-suspended">
+          <p className="account-status-title">Your account is suspended.</p>
+          {accountStatus.until && (
+            <p className="account-status-reason">
+              Until: {accountStatus.until.toLocaleDateString("en-GB", {
+                day: "numeric", month: "long", year: "numeric",
+              })}
+            </p>
+          )}
+          {accountStatus.reason && (
+            <p className="account-status-reason">Reason: {accountStatus.reason}</p>
+          )}
+          <p className="account-status-contact">
+            You can read the community but cannot post until your suspension ends.
+          </p>
+        </div>
+      )}
+
+      {/* Warning banner — dismissable, form still usable */}
+      {accountStatus.status === "warned" && !warnDismissed && (
+        <div className="account-status-banner account-status-warned">
+          <p className="account-status-title">
+            Your account has received a warning. Further violations may result in suspension.
+          </p>
+          <button
+            type="button"
+            className="account-status-dismiss"
+            onClick={() => setWarnDismissed(true)}
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* General submit error */}
       {error && <p className="create-post-error">{error}</p>}
+
+      {/* Moderation warning — shown when blocked words are found */}
+      {moderationError && (
+        <div className="moderation-warning">
+          <p>{moderationError}</p>
+          <button
+            type="button"
+            className="moderation-warning-dismiss"
+            onClick={() => setModerationError(null)}
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       <div className="create-post-field">
         <label className="create-post-label" htmlFor="post-title">
@@ -94,9 +186,10 @@ function CreatePost({ authorId, authorName, authorRole }) {
           type="text"
           className="create-post-input"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={handleTitleChange}
           placeholder="What's on your mind?"
           maxLength={120}
+          disabled={isSuspended}
         />
       </div>
 
@@ -108,9 +201,10 @@ function CreatePost({ authorId, authorName, authorRole }) {
           id="post-body"
           className="create-post-textarea"
           value={body}
-          onChange={(e) => setBody(e.target.value)}
+          onChange={handleBodyChange}
           placeholder="Share more detail..."
           rows={4}
+          disabled={isSuspended}
         />
       </div>
 
@@ -123,6 +217,7 @@ function CreatePost({ authorId, authorName, authorRole }) {
           className="create-post-select"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
+          disabled={isSuspended}
         >
           <option value="">Select a category</option>
           {CATEGORIES.map((cat) => (
@@ -137,7 +232,7 @@ function CreatePost({ authorId, authorName, authorRole }) {
         <button
           type="submit"
           className="create-post-submit"
-          disabled={submitting}
+          disabled={submitting || isSuspended || !!moderationError}
         >
           {submitting ? "Posting..." : "Post"}
         </button>

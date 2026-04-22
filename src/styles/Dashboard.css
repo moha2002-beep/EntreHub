@@ -2,178 +2,72 @@
    Dashboard.css
    ===================================================== */
 
-.dashboard-page {
-  min-height: 100vh;
-  background: var(--bg);
-  display: flex;
-  flex-direction: column;
-}
-
-/* ── Header ── */
-.dashboard-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 2rem;
-  height: 60px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  gap: 1rem;
-}
-
-.dashboard-logo {
-  font-weight: 800;
-  font-size: 1.1rem;
-  color: var(--brand);
-  letter-spacing: -0.02em;
-  flex-shrink: 0;
-}
-
-/* Nav */
-.dashboard-nav {
-  display: flex;
-  gap: 0.2rem;
-}
-
-.dashboard-nav-link {
-  font-size: 0.875rem;
-  color: var(--text-sub);
-  padding: 0.4rem 0.85rem;
-  border-radius: var(--r-sm);
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-family: inherit;
-  font-weight: 500;
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.dashboard-nav-link:hover {
-  background-color: var(--bg);
-  color: var(--text);
-}
-
-.dashboard-nav-link-active {
-  background-color: var(--brand-light);
-  color: var(--brand);
-  font-weight: 600;
-}
-
-/* Pending-count badge on the Bookings nav button */
-.dashboard-nav-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  margin-left: 5px;
-  background: #4F46E5;
-  color: #fff;
-  border-radius: 99px;
-  font-size: 0.68rem;
-  font-weight: 700;
-  vertical-align: middle;
-}
-
-/* User area */
-.dashboard-user {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  font-size: 0.875rem;
-  color: var(--text-sub);
-  flex-shrink: 0;
-}
-
-.dashboard-avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--brand), #7C3AED);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  font-size: 0.78rem;
-  font-weight: 700;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-
-.dashboard-avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
-.dashboard-logout-btn {
-  border: 1.5px solid var(--border);
-  background: var(--surface);
-  color: var(--text-sub);
-  padding: 0.35rem 0.85rem;
-  border-radius: var(--r-sm);
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.15s ease;
-}
-
-.dashboard-logout-btn:hover {
-  border-color: var(--border-strong);
-  background: var(--bg);
-  color: var(--text);
-}
-
-/* ── Main content ── */
-.dashboard-main {
-  flex: 1;
-  padding: 2rem;
-  display: flex;
-  justify-content: center;
-}
-
-.dashboard-content {
-  width: 100%;
-  max-width: 960px;
-}
-
 /* ── Hero banner ── */
 .dashboard-hero-card {
-  background: linear-gradient(135deg, var(--brand) 0%, #7C3AED 100%);
+  background: linear-gradient(135deg, var(--brand) 0%, var(--accent) 100%);
   border-radius: var(--r-lg);
-  padding: 2rem 2rem 1.75rem;
+  padding: 2rem;
   margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-premium);
+}
+
+.dashboard-hero-content {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.dashboard-hero-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--surface);
+  box-shadow: 
+    0 0 0 2px var(--surface), 
+    0 0 0 5px var(--brand),
+    0 12px 24px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.dashboard-hero-avatar:hover {
+  transform: scale(1.05);
+}
+
+.dashboard-hero-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--brand-light); /* changed from rgba for better contrast */
+  color: var(--brand);
+  font-size: 1.75rem;
+  font-weight: 700;
 }
 
 .dashboard-hero-title {
   font-size: 1.5rem;
   font-weight: 700;
   color: #ffffff;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.2rem;
   letter-spacing: -0.02em;
 }
 
 .dashboard-hero-subtitle {
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.72);
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .dashboard-pill {
   display: inline-flex;
   align-items: center;
-  padding: 0.15rem 0.6rem;
+  padding: 0.15rem 0.65rem;
   border-radius: var(--r-full);
-  font-size: 0.78rem;
-  background-color: rgba(255, 255, 255, 0.18);
+  font-size: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.15);
   color: #ffffff;
   font-weight: 600;
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* ── Card grid ── */
@@ -181,6 +75,11 @@
   display: grid;
   grid-template-columns: 2fr 1.4fr;
   gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .dashboard-card {
@@ -188,6 +87,7 @@
   border-radius: var(--r-md);
   padding: 1.5rem;
   border: 1px solid var(--border);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .dashboard-card-title {
@@ -197,6 +97,9 @@
   margin-bottom: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .dashboard-card-body {
@@ -205,7 +108,56 @@
   line-height: 1.65;
 }
 
-/* Progress bar */
+/* ── Clickable link cards ── */
+.dashboard-card-link {
+  cursor: pointer;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dashboard-card-link:hover {
+  border-color: var(--brand-border);
+  box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+  background: linear-gradient(to bottom right, var(--surface), var(--brand-light));
+}
+
+.dashboard-card-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--brand-alpha);
+}
+
+.dashboard-card-arrow {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+
+.dashboard-card-link:hover .dashboard-card-arrow {
+  color: var(--brand);
+  transform: translateX(4px);
+}
+
+/* ── Pending badge ── */
+.dashboard-nav-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: var(--brand);
+  color: #fff;
+  border-radius: 99px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+/* ── Progress bar ── */
 .dashboard-progress {
   width: 100%;
   height: 6px;
@@ -217,12 +169,12 @@
 
 .dashboard-progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, var(--brand), #7C3AED);
+  background: linear-gradient(90deg, var(--brand), var(--accent));
   border-radius: var(--r-full);
   transition: width 0.4s ease;
 }
 
-/* Missing items list */
+/* ── Missing items list ── */
 .dashboard-meta-list {
   list-style: none;
   padding: 0;
@@ -238,7 +190,7 @@
   content: "· ";
 }
 
-/* Role chips */
+/* ── Role chips ── */
 .dashboard-chip-row {
   display: flex;
   flex-wrap: wrap;
@@ -256,7 +208,7 @@
   border: 1px solid var(--brand-border);
 }
 
-/* CTA buttons */
+/* ── CTA row ── */
 .dashboard-action-row {
   display: flex;
   gap: 0.6rem;
@@ -264,28 +216,21 @@
   margin-top: 1rem;
 }
 
-.dashboard-action-btn {
-  border: none;
-  background: var(--brand);
-  color: #ffffff;
-  padding: 0.45rem 1.1rem;
-  border-radius: var(--r-sm);
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
-  transition: background-color 0.15s ease, transform 0.1s ease;
-}
-
-.dashboard-action-btn:hover {
-  background: var(--brand-hover);
-  transform: translateY(-1px);
-}
-
 /* ── Responsive ── */
 @media (max-width: 768px) {
-  .dashboard-header { padding: 0 1rem; }
-  .dashboard-nav    { display: none; }
-  .dashboard-main   { padding: 1.25rem 1rem; }
-  .dashboard-grid   { grid-template-columns: 1fr; }
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-hero-card {
+    padding: 1.5rem;
+  }
+
+  .dashboard-hero-title {
+    font-size: 1.25rem;
+  }
 }

@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState } from "react";
 import { subscribeToAuthState } from "../services/authService";
 
@@ -15,7 +14,6 @@ export function AuthProvider({ children }) {
           uid: authUser.uid,
           email: authUser.email,
           displayName: authUser.displayName,
-          role: authUser.role,
         });
       } else {
         setUser(null);
@@ -33,10 +31,9 @@ export function AuthProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!ctx) throw new Error("useAuth must be used within an AuthProvider");
   return ctx;
 }

@@ -1,22 +1,5 @@
 /**
- * MentorDetail.jsx
- *
- * Full profile view for a single mentor, accessed via /mentor/:uid.
- *
- * Two new additions beyond the original design:
- *   1. Hourly rate, availability window, and years of experience displayed
- *      alongside the other profile fields.
- *   2. BookingCalendar embedded at the bottom — but ONLY if the logged-in
- *      user is an entrepreneur.  Mentors and investors see the profile
- *      information but not the booking widget.
- *
- * Teaching point — role-gated UI:
- *   We fetch the current viewer's own profile (getUserProfile(user.uid))
- *   to determine their role.  This check happens client-side: the data is
- *   already in Firestore and doesn't require an extra network call because
- *   it would have been loaded during Dashboard mount.  In a real app you'd
- *   cache this in context; here the extra fetch is acceptable and keeps the
- *   component self-contained for teaching purposes.
+ * MentorDetail.jsx — Detailed mentor profile and booking access.
  */
 
 import { useEffect, useState } from "react";
@@ -24,6 +7,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getUserProfile } from "../services/userService";
 import BookingCalendar from "../components/BookingCalendar";
+import Navbar from "../components/Navbar";
 import "../styles/Mentors.css";
 
 function MentorDetail() {
@@ -32,12 +16,13 @@ function MentorDetail() {
   const { user }   = useAuth();
 
   const [mentor,          setMentor]          = useState(null);
-  const [viewerProfile,   setViewerProfile]   = useState(null); // current user's own profile
+  const [viewerProfile,   setViewerProfile]   = useState(null);
   const [loading,         setLoading]         = useState(true);
   const [error,           setError]           = useState(null);
 
-  // Fetch both the mentor's profile AND the current user's profile in parallel.
-  // Promise.all() fires both requests simultaneously — faster than sequencing them.
+  /**
+   * Fetches the mentor's profile and the viewer's own profile in parallel.
+   */
   useEffect(() => {
     if (!uid || !user) return;
 
@@ -66,13 +51,17 @@ function MentorDetail() {
     load();
   }, [uid, user]);
 
-  // ── Loading / error states ──────────────────────────────────────────────
+  // Loading / error states 
 
   if (loading) {
     return (
-      <div className="mentor-detail-page">
-        <div className="mentor-detail-inner">
-          <p className="mentor-empty">Loading…</p>
+      <div className="page-shell">
+        <Navbar />
+        <div className="page-body">
+          <div className="loading-state">
+            <div className="spinner spinner-light" />
+            <p className="loading-state-text">Loading mentor profile...</p>
+          </div>
         </div>
       </div>
     );
@@ -80,22 +69,29 @@ function MentorDetail() {
 
   if (error || !mentor) {
     return (
-      <div className="mentor-detail-page">
-        <div className="mentor-detail-inner">
-          <button
-            type="button"
-            className="mentor-detail-back"
-            onClick={() => navigate("/dashboard")}
-          >
-            ← Back to mentors
-          </button>
-          <p className="mentor-empty">{error || "Mentor not found."}</p>
+      <div className="page-shell">
+        <Navbar />
+        <div className="page-body">
+          <div className="page-inner-narrow">
+            <button
+              type="button"
+              className="mentor-detail-back"
+              onClick={() => navigate("/mentors")}
+            >
+              ← Back to mentors
+            </button>
+            <div className="empty-state">
+              <div className="empty-state-icon">😕</div>
+              <h2 className="empty-state-heading">Mentor not found</h2>
+              <p className="empty-state-text">{error || "This mentor profile doesn't exist or has been removed."}</p>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
-  // ── Derived values ──────────────────────────────────────────────────────
+  // Derived values 
 
   const initials = (mentor.displayName || "?")
     .split(" ")
@@ -128,21 +124,23 @@ function MentorDetail() {
   const isEntrepreneur = viewerProfile?.role === "entrepreneur";
   const isSelf         = user?.uid === uid; // mentor viewing their own profile
 
-  // ── Render ──────────────────────────────────────────────────────────────
+  //  Render 
 
   return (
-    <div className="mentor-detail-page">
-      <div className="mentor-detail-inner">
+    <div className="page-shell">
+      <Navbar />
+      <div className="page-body">
+        <div className="mentor-detail-inner">
 
         <button
           type="button"
           className="mentor-detail-back"
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate("/mentors")}
         >
           ← Back to mentors
         </button>
 
-        {/* ── Profile card ── */}
+        {/*  Profile card  */}
         <div className="mentor-detail-card">
 
           {/* Header: avatar + name + headline */}
@@ -219,11 +217,11 @@ function MentorDetail() {
           )}
         </div>
 
-        {/* ── Booking widget (entrepreneurs only) ── */}
+        {/*  Booking widget (entrepreneurs only)  */}
         {isSelf ? (
           // Mentor is viewing their own profile
           <div className="mentor-detail-card">
-            <p style={{ color: "#475569", fontSize: "0.9rem", margin: 0 }}>
+            <p style={{ color: "var(--text-sub)", fontSize: "0.9rem", margin: 0 }}>
               This is your mentor profile. Entrepreneurs will see a booking
               calendar here.
             </p>
@@ -242,12 +240,13 @@ function MentorDetail() {
         ) : (
           // Investor or other role — informational note
           <div className="mentor-detail-card">
-            <p style={{ color: "#475569", fontSize: "0.9rem", margin: 0 }}>
+            <p style={{ color: "var(--text-sub)", fontSize: "0.9rem", margin: 0 }}>
               Only entrepreneurs can book sessions with mentors.
             </p>
           </div>
         )}
 
+        </div>
       </div>
     </div>
   );
