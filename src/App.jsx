@@ -15,7 +15,7 @@ import Bookings from "./pages/Bookings";
 import Community from "./pages/Community";
 import PostDetail from "./pages/PostDetail";
 import Resources from "./pages/Resources";
-import "./App.css";
+
 
 function App() {
   const { user, loading } = useAuth();
